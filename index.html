@@ -303,6 +303,16 @@ async function loadExercises(){
         const exerciseSelect =
             document.getElementById("exercise");
 
+        const placeholder =
+            document.createElement("option");
+
+        placeholder.value = "";
+        placeholder.textContent = "Select one";
+        placeholder.disabled = true;
+        placeholder.selected = true;
+
+        exerciseSelect.appendChild(placeholder);
+        
         rows.forEach(row => {
 
             const value = row.trim();
@@ -379,6 +389,11 @@ function addFood(servingMultiplier){
 
     const selectedFood =
         document.getElementById("foodSelect").value;
+
+    if (!selectedFood) {
+        alert("Please select a food.");
+        return;
+    }
 
     const food =
         foods.find(
