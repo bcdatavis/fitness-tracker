@@ -240,6 +240,16 @@ async function loadFoods(){
         const foodSelect =
             document.getElementById("foodSelect");
 
+        const placeholder =
+            document.createElement("option");
+
+        placeholder.value = "";
+        placeholder.textContent = "Select one";
+        placeholder.disabled = true;
+        placeholder.selected = true;
+
+        foodSelect.appendChild(placeholder);
+
         rows.forEach(row => {
 
             const cols = row.split(",");
