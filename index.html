@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fitness Tracker</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    max-width:600px;
+    margin:auto;
+    padding:12px;
+    background:#f4f4f4;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-top:15px;
+    margin-bottom:5px;
+}
+
+select,
+input{
+    width:100%;
+    padding:12px;
+    font-size:16px;
+}
+
+.button-row{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+button{
+    padding:14px;
+    border:none;
+    border-radius:6px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.full-btn{
+    flex:1;
+    background:#4CAF50;
+    color:white;
+}
+
+.half-btn{
+    flex:1;
+    background:#2196F3;
+    color:white;
+}
+
+.save-btn{
+    width:100%;
+    margin-top:20px;
+    background:#FF9800;
+    color:white;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+    background:white;
+}
+
+th,
+td{
+    border:1px solid #ccc;
+    padding:10px;
+    text-align:center;
+}
+
+.heading{
+    background:#333;
+    color:white;
+}
+
+.summary{
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Fitness Tracker</h1>
+
+<label for="exercise">Exercise</label>
+<select id="exercise"></select>
+
+<label for="steps">Steps</label>
+<input
+    type="number"
+    id="steps"
+    placeholder="Enter today's steps"
+/>
+
+<label for="foodSelect">Food</label>
+<select id="foodSelect"></select>
+
+<div class="button-row">
+    <button class="full-btn" onclick="addFood(1)">
+        Full Serving
+    </button>
+
+    <button class="half-btn" onclick="addFood(0.5)">
+        Half Serving
+    </button>
+</div>
+
+<table>
+    <tr>
+        <th colspan="3" class="heading">
+            Goals
+        </th>
+    </tr>
+
+    <tr>
+        <th>Protein</th>
+        <th>Calories</th>
+        <th>Fat</th>
+    </tr>
+
+    <tr>
+        <td>120-140</td>
+        <td>2600</td>
+        <td>-</td>
+    </tr>
+</table>
+
+<table>
+
+    <tr>
+        <th colspan="3" class="heading">
+            Daily Totals
+        </th>
+    </tr>
+
+    <tr>
+        <th>Protein</th>
+        <th>Calories</th>
+        <th>Fat</th>
+    </tr>
+
+    <tr class="summary">
+        <td id="totalProtein">0</td>
+        <td id="totalCalories">0</td>
+        <td id="totalFat">0</td>
+    </tr>
+
+</table>
+
+<label for="githubToken">
+    GitHub Personal Access Token (PAT)
+</label>
+
+<input
+    type="password"
+    id="githubToken"
+    autocomplete="off"
+    placeholder="Paste GitHub PAT only when saving"
+/>
+
+<button
+    class="save-btn"
+    onclick="saveDay()">
+    Save
+</button>
+
+<script>
+
+/*
+====================================================
+CONFIGURATION
+====================================================
+*/
+
+const FOOD_URL =
+"https://raw.githubusercontent.com/bcdatavis/fitness-tracker/main/data/food.csv";
+
+const EXERCISE_URL =
+"https://raw.githubusercontent.com/bcdatavis/fitness-tracker/main/data/exercise.csv";
+
+const GITHUB_OWNER = "bcdatavis";
+const GITHUB_REPO = "fitness-tracker";
+const GITHUB_BRANCH = "main";
+const LOG_FILE = "log/fitness-log.csv";
+
+/*
+====================================================
+GLOBALS
+====================================================
+*/
+
+let foods = [];
+
+let totals = {
+    protein:0,
+    calories:0,
+    fat:0
+};
+
+/*
+====================================================
+LOAD FOODS
+====================================================
+*/
+
+async function loadFoods(){
+
+    try{
+
+        const response =
+            await fetch(FOOD_URL);
+
+        const csv =
+            await response.text();
+
+        const rows =
+            csv.trim().split("\n");
+
+        rows.shift();
+
+        const foodSelect =
+            document.getElementById("foodSelect");
+
+        rows.forEach(row => {
+
+            const cols = row.split(",");
+
+            const food = {
+                name:cols[0],
+                protein:Number(cols[1]),
+                calories:Number(cols[2]),
+                fat:Number(cols[3])
+            };
+
+            foods.push(food);
+
+            const option =
+                document.createElement("option");
+
+            option.value = food.name;
+            option.textContent = food.name;
+
+            foodSelect.appendChild(option);
+
+        });
+
+    }
+    catch(error){
+        console.error(error);
+        alert("Unable to load food.csv");
+    }
+
+}
+
+/*
+====================================================
+LOAD EXERCISES
+====================================================
+*/
+
+async function loadExercises(){
+
+    try{
+
+        const response =
+            await fetch(EXERCISE_URL);
+
+        const csv =
+            await response.text();
+
+        const rows =
+            csv.trim().split("\n");
+
+        const exerciseSelect =
+            document.getElementById("exercise");
+
+        rows.forEach(row => {
+
+            const value = row.trim();
+
+            if(!value){
+                return;
+            }
+
+            const option =
+                document.createElement("option");
+
+            option.value = value;
+            option.textContent = value;
+
+            exerciseSelect.appendChild(option);
+
+        });
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        const exerciseSelect =
+            document.getElementById("exercise");
+
+        [
+            "arms",
+            "legs & core",
+            "bike",
+            "bike & arms"
+        ].forEach(item => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = item;
+            option.textContent = item;
+
+            exerciseSelect.appendChild(option);
+
+        });
+
+    }
+
+}
+
+/*
+====================================================
+DISPLAY TOTALS
+====================================================
+*/
+
+function updateTotalsDisplay(){
+
+    document.getElementById("totalProtein").textContent =
+        totals.protein.toFixed(1);
+
+    document.getElementById("totalCalories").textContent =
+        totals.calories.toFixed(1);
+
+    document.getElementById("totalFat").textContent =
+        totals.fat.toFixed(1);
+
+}
+
+/*
+====================================================
+ADD FOOD
+====================================================
+*/
+
+function addFood(servingMultiplier){
+
+    const selectedFood =
+        document.getElementById("foodSelect").value;
+
+    const food =
+        foods.find(
+            x => x.name === selectedFood
+        );
+
+    if(!food){
+        return;
+    }
+
+    totals.protein +=
+        food.protein * servingMultiplier;
+
+    totals.calories +=
+        food.calories * servingMultiplier;
+
+    totals.fat +=
+        food.fat * servingMultiplier;
+
+    updateTotalsDisplay();
+
+    saveLocalState();
+
+}
+
+/*
+====================================================
+LOCAL STORAGE
+====================================================
+*/
+
+function saveLocalState(){
+
+    const state = {
+
+        exercise:
+            document.getElementById("exercise").value,
+
+        steps:
+            document.getElementById("steps").value,
+
+        totals
+
+    };
+
+    localStorage.setItem(
+        "fitnessTracker",
+        JSON.stringify(state)
+    );
+
+}
+
+function loadLocalState(){
+
+    const saved =
+        localStorage.getItem(
+            "fitnessTracker"
+        );
+
+    if(!saved){
+        return;
+    }
+
+    const state =
+        JSON.parse(saved);
+
+    document.getElementById("steps").value =
+        state.steps || "";
+
+    totals =
+        state.totals || totals;
+
+    updateTotalsDisplay();
+
+    setTimeout(() => {
+
+        document.getElementById("exercise").value =
+            state.exercise || "";
+
+    },500);
+
+}
+
+/*
+====================================================
+CLEAR FORM AFTER SAVE
+====================================================
+*/
+
+function clearDailyValues(){
+
+    document.getElementById("steps").value = "";
+
+    document.getElementById("githubToken").value = "";
+
+    document.getElementById("exercise").selectedIndex = 0;
+
+    document.getElementById("foodSelect").selectedIndex = 0;
+
+    totals = {
+        protein:0,
+        calories:0,
+        fat:0
+    };
+
+    updateTotalsDisplay();
+
+    localStorage.removeItem("fitnessTracker");
+
+}
+
+/*
+====================================================
+SAVE TO GITHUB
+====================================================
+*/
+
+async function saveDay(){
+
+    const token =
+        document.getElementById(
+            "githubToken"
+        ).value.trim();
+
+    if(!token){
+
+        alert(
+            "Enter a GitHub PAT before saving."
+        );
+
+        return;
+
+    }
+
+    try{
+
+        const today =
+            new Date()
+            .toISOString()
+            .split("T")[0];
+
+        const line =
+`${today},${document.getElementById("exercise").value},${document.getElementById("steps").value},${totals.protein.toFixed(1)},${totals.calories.toFixed(1)},${totals.fat.toFixed(1)}
+`;
+
+        /*
+        GET EXISTING FILE
+        */
+
+        const getResponse =
+            await fetch(
+                `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${LOG_FILE}`,
+            {
+                headers:{
+                    Authorization:`Bearer ${token}`,
+                    Accept:"application/vnd.github+json"
+                }
+            });
+
+        if(!getResponse.ok){
+
+            throw new Error(
+                "Unable to read fitness-log.csv"
+            );
+
+        }
+
+        const existingFile =
+            await getResponse.json();
+
+        const currentContent =
+            atob(
+                existingFile.content
+                .replace(/\n/g,"")
+            );
+
+        const updatedContent =
+            currentContent + line;
+
+        const encodedContent =
+            btoa(
+                unescape(
+                    encodeURIComponent(
+                        updatedContent
+                    )
+                )
+            );
+
+        /*
+        COMMIT UPDATED FILE
+        */
+
+        const putResponse =
+            await fetch(
+                `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${LOG_FILE}`,
+            {
+                method:"PUT",
+
+                headers:{
+                    Authorization:`Bearer ${token}`,
+                    Accept:"application/vnd.github+json",
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    message:
+                        `Fitness Log ${today}`,
+
+                    content:
+                        encodedContent,
+
+                    sha:
+                        existingFile.sha,
+
+                    branch:
+                        GITHUB_BRANCH
+
+                })
+
+            });
+
+        if(!putResponse.ok){
+
+            const error =
+                await putResponse.json();
+
+            console.error(error);
+
+            throw new Error(
+                error.message ||
+                "GitHub commit failed"
+            );
+
+        }
+
+        alert(
+            "Fitness log saved successfully."
+        );
+
+        clearDailyValues();
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        alert(
+            "Error saving log:\n\n" +
+            error.message
+        );
+
+    }
+
+}
+
+/*
+====================================================
+AUTO SAVE STEPS
+====================================================
+*/
+
+document.addEventListener(
+    "input",
+    function(event){
+
+        if(
+            event.target.id === "steps"
+        ){
+            saveLocalState();
+        }
+
+    }
+);
+
+/*
+====================================================
+INITIALIZE
+====================================================
+*/
+
+(async function(){
+
+    await loadFoods();
+
+    await loadExercises();
+
+    loadLocalState();
+
+})();
+
+</script>
+
+</body>
+</html>
