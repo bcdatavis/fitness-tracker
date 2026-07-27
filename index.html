@@ -530,10 +530,13 @@ async function saveDay(){
 
     try{
 
-        const today =
-            new Date()
-            .toISOString()
-            .split("T")[0];
+        const today = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "America/Vancouver",
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        }).format(new Date());
 
         const line =
 `${today},${document.getElementById("exercise").value},${document.getElementById("steps").value},${totals.protein.toFixed(1)},${totals.calories.toFixed(1)},${totals.fat.toFixed(1)}
