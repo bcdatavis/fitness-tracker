@@ -52,6 +52,17 @@ button{
     cursor:pointer;
 }
 
+.custom-button-row{
+    display:flex;
+    justify-content:center;
+    margin-top:10px;
+}
+
+.custom-btn{
+    flex:none;
+    width:220px;
+}
+
 .full-btn{
     flex:1;
     background:#4CAF50;
@@ -183,12 +194,13 @@ td{
 
 </div>
 
-<button
-    class="full-btn"
-    style="margin-top:10px;"
-    onclick="addCustomMeal()">
-    Add Custom Meal
-</button>
+<div class="custom-button-row">
+    <button
+        class="full-btn custom-btn"
+        onclick="addCustomMeal()">
+        Add Custom Meal
+    </button>
+</div>
 
 <table>
     <tr>
