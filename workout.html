@@ -405,13 +405,20 @@ try{
 
 
 const response =
-
 await fetch(WORKOUT_URL);
 
+if(!response.ok){
+
+    throw new Error(
+        "CSV loading failed: " + response.status
+    );
+
+}
 
 const csv =
-
 await response.text();
+
+console.log(csv);
 
 
 
