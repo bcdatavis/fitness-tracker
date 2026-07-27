@@ -438,33 +438,25 @@ const cols =
 row.split(",").map(x => x.trim());
 
 
-
 const item = {
 
-
 category:
-cols[1],
-
+cols[0].trim(),
 
 exercise:
-cols[2],
-
+cols[1].trim(),
 
 weight:
-cols[3],
-
+cols[2].trim(),
 
 set1:
-cols[4],
-
+cols[3]?.trim(),
 
 set2:
-cols[5],
-
+cols[4]?.trim(),
 
 set3:
-cols[6]
-
+cols[5]?.trim()
 
 };
 
