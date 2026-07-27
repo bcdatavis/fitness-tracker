@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Workout Tracker</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    max-width:600px;
+    margin:auto;
+    padding:12px;
+    background:#f4f4f4;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-top:15px;
+    margin-bottom:5px;
+}
+
+select,
+input{
+    width:100%;
+    padding:6px 10px;
+    font-size:16px;
+}
+
+.form-row{
+    display:flex;
+    gap:12px;
+}
+
+.form-row > div{
+    flex:1;
+}
+
+.exercise-card{
+
+    background:white;
+    margin-top:15px;
+    padding:15px;
+    border-radius:8px;
+    border:1px solid #ccc;
+
+}
+
+.exercise-title{
+
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:10px;
+
+}
+
+.info-row{
+
+    display:flex;
+    justify-content:space-between;
+    background:#eee;
+    padding:8px;
+    border-radius:5px;
+    margin-bottom:10px;
+
+}
+
+.set-row{
+
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+
+}
+
+.set-row div{
+
+    flex:1;
+    text-align:center;
+
+}
+
+.set-row input{
+
+    text-align:center;
+
+}
+
+button{
+
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    font-size:16px;
+    cursor:pointer;
+
+}
+
+.save-btn{
+
+    width:100%;
+    margin-top:15px;
+    background:#4CAF50;
+    color:white;
+
+}
+
+.github-btn{
+
+    width:100%;
+    margin-top:20px;
+    background:#FF9800;
+    color:white;
+
+}
+
+.completed{
+
+    margin-top:20px;
+    background:white;
+    padding:12px;
+    border-radius:8px;
+
+}
+
+.completed-item{
+
+    padding:8px;
+    border-bottom:1px solid #ddd;
+
+}
+
+.heading{
+
+    font-weight:bold;
+    background:#333;
+    color:white;
+    padding:8px;
+    text-align:center;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>
+Workout Tracker
+</h1>
+
+
+<label for="category">
+Category
+</label>
+
+<select id="category">
+</select>
+
+
+
+<label for="exercise">
+Exercise
+</label>
+
+<select id="exercise">
+</select>
+
+
+
+<div class="exercise-card">
+
+
+<div class="exercise-title" id="exerciseTitle">
+Select an exercise
+</div>
+
+
+<div class="info-row">
+
+<div>
+Weight
+<br>
+<span id="weightDisplay">
+-
+</span>
+</div>
+
+
+<div>
+Goal
+<br>
+<span id="goalDisplay">
+-
+</span>
+</div>
+
+</div>
+
+
+
+<div class="set-row">
+
+<div>
+
+<label>
+Set 1
+</label>
+
+<input
+type="number"
+id="set1"
+placeholder="0"
+>
+
+</div>
+
+
+<div>
+
+<label>
+Set 2
+</label>
+
+<input
+type="number"
+id="set2"
+placeholder="0"
+>
+
+</div>
+
+
+<div>
+
+<label>
+Set 3
+</label>
+
+<input
+type="number"
+id="set3"
+placeholder="0"
+>
+
+</div>
+
+
+</div>
+
+
+
+<button
+class="save-btn"
+onclick="saveExercise()"
+>
+
+Save Exercise
+
+</button>
+
+
+</div>
+
+
+
+<div class="completed">
+
+
+<div class="heading">
+
+Completed Today
+
+</div>
+
+
+<div id="completedList">
+
+No exercises completed.
+
+</div>
+
+
+</div>
+
+
+
+
+<label for="githubToken">
+
+GitHub Token (PAT)
+
+</label>
+
+
+<input
+
+type="password"
+
+id="githubToken"
+
+autocomplete="off"
+
+placeholder="Paste GitHub Token to Save"
+
+>
+
+
+
+<button
+
+class="github-btn"
+
+onclick="saveDay()"
+
+>
+
+Save Workout Log
+
+</button>
+
+
+
+<script>
+
+
+/*
+====================================================
+CONFIGURATION
+====================================================
+*/
+
+
+const WORKOUT_URL =
+
+"https://raw.githubusercontent.com/bcdatavis/fitness-tracker/main/data/workout.csv";
+
+
+const GITHUB_OWNER =
+
+"bcdatavis";
+
+
+const GITHUB_REPO =
+
+"fitness-tracker";
+
+
+const GITHUB_BRANCH =
+
+"main";
+
+
+const LOG_FILE =
+
+"log/workout-log.csv";
+
+
+
+/*
+====================================================
+GLOBALS
+====================================================
+*/
+
+
+let exercises = [];
+
+
+let currentExercise = null;
+
+
+let completed = [];
+
+
+
+/*
+====================================================
+LOAD WORKOUT CSV
+====================================================
+*/
+
+
+async function loadWorkout(){
+
+
+try{
+
+
+const response =
+
+await fetch(WORKOUT_URL);
+
+
+const csv =
+
+await response.text();
+
+
+
+const rows =
+
+csv.trim().split("\n");
+
+
+
+rows.shift();
+
+
+
+rows.forEach(row=>{
+
+
+const cols =
+
+row.split(",");
+
+
+
+const item = {
+
+
+category:
+cols[1],
+
+
+exercise:
+cols[2],
+
+
+weight:
+cols[3],
+
+
+set1:
+cols[4],
+
+
+set2:
+cols[5],
+
+
+set3:
+cols[6]
+
+
+};
+
+
+
+exercises.push(item);
+
+
+
+});
+
+
+
+populateCategories();
+
+
+
+}
+
+catch(error){
+
+
+console.error(error);
+
+
+alert(
+"Unable to load workout.csv"
+);
+
+
+}
+
+
+}
+
+
+
+
+/*
+====================================================
+LOAD CATEGORIES
+====================================================
+*/
+
+
+function populateCategories(){
+
+
+const categorySelect =
+
+document.getElementById("category");
+
+
+
+const placeholder =
+
+document.createElement("option");
+
+
+placeholder.value = "";
+
+placeholder.textContent =
+
+"Select one";
+
+
+placeholder.disabled = true;
+
+placeholder.selected = true;
+
+
+categorySelect.appendChild(placeholder);
+
+
+
+const categories =
+
+[...new Set(
+
+exercises.map(x=>x.category)
+
+)];
+
+
+
+categories.forEach(category=>{
+
+
+const option =
+
+document.createElement("option");
+
+
+option.value = category;
+
+
+option.textContent = category;
+
+
+categorySelect.appendChild(option);
+
+
+});
+
+
+}
+
+
+
+function populateExercises(){
+
+
+const category =
+
+document.getElementById("category").value;
+
+
+
+const exerciseSelect =
+
+document.getElementById("exercise");
+
+
+
+exerciseSelect.innerHTML = "";
+
+
+
+const placeholder =
+
+document.createElement("option");
+
+
+placeholder.value = "";
+
+placeholder.textContent =
+
+"Select one";
+
+
+placeholder.disabled = true;
+
+
+placeholder.selected = true;
+
+
+exerciseSelect.appendChild(placeholder);
+
+
+
+exercises
+
+.filter(x=>x.category===category)
+
+.forEach(item=>{
+
+
+const option =
+
+document.createElement("option");
+
+
+option.value = item.exercise;
+
+
+option.textContent = item.exercise;
+
+
+exerciseSelect.appendChild(option);
+
+
+});
+
+
+}
+
+
+
+function displayExercise(){
+
+
+const name =
+
+document.getElementById("exercise").value;
+
+
+
+currentExercise =
+
+exercises.find(
+
+x=>x.exercise===name
+
+);
+
+
+
+if(!currentExercise){
+
+return;
+
+}
+
+
+
+document.getElementById("exerciseTitle").textContent =
+
+currentExercise.exercise;
+
+
+
+document.getElementById("weightDisplay").textContent =
+
+currentExercise.weight;
+
+
+
+document.getElementById("goalDisplay").textContent =
+
+`${currentExercise.set1 || "-"} / ${currentExercise.set2 || "-"} / ${currentExercise.set3 || "-"}`;
+
+
+}
+
+
+/*
+====================================================
+SAVE CURRENT EXERCISE
+====================================================
+*/
+
+
+function saveExercise(){
+
+
+if(!currentExercise){
+
+alert(
+"Select an exercise first."
+);
+
+return;
+
+}
+
+
+const entry = {
+
+
+date:getToday(),
+
+
+category:currentExercise.category,
+
+
+exercise:currentExercise.exercise,
+
+
+weight:currentExercise.weight,
+
+
+set1:
+document.getElementById("set1").value,
+
+
+set2:
+document.getElementById("set2").value,
+
+
+set3:
+document.getElementById("set3").value
+
+
+};
+
+
+completed.push(entry);
+
+
+updateCompleted();
+
+
+saveLocalState();
+
+
+
+document.getElementById("set1").value="";
+
+document.getElementById("set2").value="";
+
+document.getElementById("set3").value="";
+
+ 
+ 
+/*
+====================================================
+UPDATE COMPLETED LIST
+====================================================
+*/
+
+
+function updateCompleted(){
+
+
+const list =
+
+document.getElementById("completedList");
+
+
+
+if(completed.length===0){
+
+
+list.textContent =
+
+"No exercises completed.";
+
+
+return;
+
+
+}
+
+
+
+list.innerHTML = "";
+
+
+
+completed.forEach(item=>{
+
+
+const div =
+
+document.createElement("div");
+
+
+div.className =
+
+"completed-item";
+
+
+
+div.textContent =
+
+`✓ ${item.exercise} (${item.set1 || 0}/${item.set2 || 0}/${item.set3 || 0})`;
+
+
+
+list.appendChild(div);
+
+
+
+});
+
+
+}
+
+
+
+
+
+/*
+====================================================
+DATE FORMAT
+====================================================
+*/
+
+
+function getToday(){
+
+
+return new Intl.DateTimeFormat(
+
+"en-CA",
+
+{
+
+timeZone:"America/Vancouver",
+
+weekday:"long",
+
+year:"numeric",
+
+month:"long",
+
+day:"numeric"
+
+}
+
+).format(new Date());
+
+
+}
+
+
+
+
+
+
+/*
+====================================================
+LOCAL STORAGE
+====================================================
+*/
+
+
+function saveLocalState(){
+
+
+const state = {
+
+
+completed:completed,
+
+
+category:
+
+document.getElementById("category").value,
+
+
+exercise:
+
+document.getElementById("exercise").value
+
+
+};
+
+
+
+localStorage.setItem(
+
+"workoutTracker",
+
+JSON.stringify(state)
+
+);
+
+
+}
+
+
+
+
+
+function loadLocalState(){
+
+
+const saved =
+
+localStorage.getItem(
+
+"workoutTracker"
+
+);
+
+
+
+if(!saved){
+
+return;
+
+}
+
+
+
+const state =
+
+JSON.parse(saved);
+
+
+
+completed =
+
+state.completed || [];
+
+
+
+updateCompleted();
+
+
+
+setTimeout(()=>{
+
+
+document.getElementById("category").value =
+
+state.category || "";
+
+
+
+populateExercises();
+
+
+
+setTimeout(()=>{
+
+
+document.getElementById("exercise").value =
+
+state.exercise || "";
+
+
+
+displayExercise();
+
+
+
+},200);
+
+
+
+},500);
+
+
+
+}
+
+
+
+
+
+/*
+====================================================
+SAVE WORKOUT LOG TO GITHUB
+====================================================
+*/
+
+
+async function saveDay(){
+
+
+const token =
+
+document.getElementById(
+
+"githubToken"
+
+).value.trim();
+
+
+
+if(!token){
+
+
+alert(
+
+"Enter a GitHub PAT before saving."
+
+);
+
+
+return;
+
+
+}
+
+
+
+if(completed.length===0){
+
+
+alert(
+
+"No exercises completed."
+
+);
+
+
+return;
+
+
+}
+
+
+
+
+try{
+
+
+const getResponse =
+
+await fetch(
+
+`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${LOG_FILE}`,
+
+{
+
+headers:{
+
+Authorization:
+
+`Bearer ${token}`,
+
+Accept:
+
+"application/vnd.github+json"
+
+}
+
+}
+
+);
+
+
+
+if(!getResponse.ok){
+
+
+throw new Error(
+
+"Unable to read workout-log.csv"
+
+);
+
+
+}
+
+
+
+
+const existingFile =
+
+await getResponse.json();
+
+
+
+const currentContent =
+
+atob(
+
+existingFile.content.replace(/\n/g,"")
+
+);
+
+
+
+
+let newLines = "";
+
+
+
+completed.forEach(item=>{
+
+
+newLines +=
+
+`${item.date},${item.category},${item.exercise},${item.weight},${item.set1},${item.set2},${item.set3}\n`;
+
+
+});
+
+
+
+
+const updatedContent =
+
+currentContent + newLines;
+
+
+
+const encodedContent =
+
+btoa(
+
+unescape(
+
+encodeURIComponent(
+
+updatedContent
+
+)
+
+)
+
+);
+
+
+
+
+
+const putResponse =
+
+await fetch(
+
+`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${LOG_FILE}`,
+
+{
+
+method:"PUT",
+
+
+headers:{
+
+Authorization:
+
+`Bearer ${token}`,
+
+Accept:
+
+"application/vnd.github+json",
+
+"Content-Type":
+
+"application/json"
+
+},
+
+
+
+body:JSON.stringify({
+
+
+message:
+
+`Workout Log ${getToday()}`,
+
+
+content:
+
+encodedContent,
+
+
+sha:
+
+existingFile.sha,
+
+
+branch:
+
+GITHUB_BRANCH
+
+
+
+})
+
+
+}
+
+);
+
+
+
+
+
+if(!putResponse.ok){
+
+
+const error =
+
+await putResponse.json();
+
+
+
+throw new Error(
+
+error.message ||
+
+"GitHub save failed"
+
+);
+
+
+}
+
+
+
+
+alert(
+
+"Workout log saved successfully."
+
+);
+
+
+
+clearWorkout();
+
+
+
+}
+
+catch(error){
+
+
+console.error(error);
+
+
+
+alert(
+
+"Error saving workout log:\n\n" +
+
+error.message
+
+);
+
+
+}
+
+
+
+}
+
+
+
+
+
+/*
+====================================================
+CLEAR AFTER SAVE
+====================================================
+*/
+
+
+function clearWorkout(){
+
+
+completed = [];
+
+
+updateCompleted();
+
+
+
+document.getElementById("githubToken").value="";
+
+
+
+localStorage.removeItem(
+
+"workoutTracker"
+
+);
+
+
+
+}
+
+
+
+
+
+/*
+====================================================
+EVENT LISTENERS
+====================================================
+*/
+
+
+document
+
+.getElementById("category")
+
+.addEventListener(
+
+"change",
+
+function(){
+
+
+populateExercises();
+
+
+}
+
+);
+
+
+
+
+
+document
+
+.getElementById("exercise")
+
+.addEventListener(
+
+"change",
+
+function(){
+
+
+displayExercise();
+
+
+}
+
+);
+
+
+
+
+
+
+
+/*
+====================================================
+INITIALIZE
+====================================================
+*/
+
+
+(async function(){
+
+
+await loadWorkout();
+
+
+loadLocalState();
+
+
+})();
+
+
+
+</script>
+
+
+</body>
+
+
+</html>
+}
