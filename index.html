@@ -150,6 +150,46 @@ td{
     </button>
 </div>
 
+<label>Custom Meal</label>
+
+<div class="form-row">
+
+    <div>
+        <label for="customProtein">Protein (g)</label>
+        <input
+            type="number"
+            id="customProtein"
+            placeholder="0"
+            step="0.1">
+    </div>
+
+    <div>
+        <label for="customCalories">Calories</label>
+        <input
+            type="number"
+            id="customCalories"
+            placeholder="0"
+            step="1">
+    </div>
+
+    <div>
+        <label for="customFat">Fat (g)</label>
+        <input
+            type="number"
+            id="customFat"
+            placeholder="0"
+            step="0.1">
+    </div>
+
+</div>
+
+<button
+    class="full-btn"
+    style="margin-top:10px;"
+    onclick="addCustomMeal()">
+    Add Custom Meal
+</button>
+
 <table>
     <tr>
         <th colspan="3" class="heading">
@@ -447,6 +487,41 @@ function addFood(servingMultiplier){
 
 /*
 ====================================================
+ADD CUSTOM MEAL
+====================================================
+*/
+
+function addCustomMeal(){
+
+    const protein =
+        Number(document.getElementById("customProtein").value) || 0;
+
+    const calories =
+        Number(document.getElementById("customCalories").value) || 0;
+
+    const fat =
+        Number(document.getElementById("customFat").value) || 0;
+
+    if(protein === 0 && calories === 0 && fat === 0){
+        alert("Enter at least one value.");
+        return;
+    }
+
+    totals.protein += protein;
+    totals.calories += calories;
+    totals.fat += fat;
+
+    updateTotalsDisplay();
+    saveLocalState();
+
+    document.getElementById("customProtein").value = "";
+    document.getElementById("customCalories").value = "";
+    document.getElementById("customFat").value = "";
+}
+    
+    
+/*
+====================================================
 LOCAL STORAGE
 ====================================================
 */
@@ -463,6 +538,15 @@ function saveLocalState(){
 
         bikeRide:
             document.getElementById("bikeRide").value,
+
+        customProtein:
+            document.getElementById("customProtein").value,
+
+        customCalories:
+            document.getElementById("customCalories").value,
+        
+        customFat:
+            document.getElementById("customFat").value,
 
         totals
 
@@ -493,7 +577,16 @@ function loadLocalState(){
         state.steps || "";
 
     document.getElementById("bikeRide").value =
-    state.bikeRide || "";
+        state.bikeRide || "";
+
+    document.getElementById("customProtein").value =
+        state.customProtein || "";
+
+    document.getElementById("customCalories").value =
+        state.customCalories || "";
+    
+    document.getElementById("customFat").value =
+        state.customFat || "";
 
     totals =
         state.totals || totals;
@@ -526,6 +619,12 @@ function clearDailyValues(){
     document.getElementById("exercise").selectedIndex = 0;
 
     document.getElementById("foodSelect").selectedIndex = 0;
+
+    document.getElementById("customProtein").value = "";
+    
+    document.getElementById("customCalories").value = "";
+    
+    document.getElementById("customFat").value = "";
 
     totals = {
         protein:0,
