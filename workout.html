@@ -423,8 +423,7 @@ console.log(csv);
 
 
 const rows =
-
-csv.trim().split("\n");
+csv.split("\n");
 
 
 
@@ -436,8 +435,7 @@ rows.forEach(row=>{
 
 
 const cols =
-
-row.split(",");
+row.split(",").map(x => x.trim());
 
 
 
