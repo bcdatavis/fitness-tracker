@@ -434,29 +434,33 @@ rows.shift();
 rows.forEach(row=>{
 
 
+if(!row.trim()){
+    return;
+}
+    
 const cols =
 row.split(",").map(x => x.trim());
 
 
 const item = {
 
-category:
-cols[0].trim(),
+    category:
+    cols[0]?.trim() || "",
 
-exercise:
-cols[1].trim(),
+    exercise:
+    cols[1]?.trim() || "",
 
-weight:
-cols[2].trim(),
+    weight:
+    cols[2]?.trim() || "",
 
-set1:
-cols[3]?.trim(),
+    set1:
+    cols[3]?.trim() || "",
 
-set2:
-cols[4]?.trim(),
+    set2:
+    cols[4]?.trim() || "",
 
-set3:
-cols[5]?.trim()
+    set3:
+    cols[5]?.trim() || ""
 
 };
 
