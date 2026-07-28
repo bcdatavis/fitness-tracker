@@ -200,6 +200,15 @@ td{
             step="0.1">
     </div>
 
+    <div>
+        <label for="customSugar">Sugar (g)</label>
+        <input
+            type="number"
+            id="customSugar"
+            placeholder="0"
+            step="0.1">
+    </div>
+
 </div>
 
 <div class="custom-button-row">
@@ -221,12 +230,14 @@ td{
         <th>Protein (g)</th>
         <th>Calories</th>
         <th>Fat (g)</th>
+        <th>Sugar (g)</th>
     </tr>
 
     <tr>
         <td>120-140</td>
         <td>2600</td>
         <td>55-100</td>
+        <td>100-120</td>
     </tr>
 </table>
 
@@ -242,12 +253,14 @@ td{
         <th>Protein (g)</th>
         <th>Calories</th>
         <th>Fat (g)</th>
+        <th>Sugar (g)</th>
     </tr>
 
     <tr class="summary">
         <td id="totalProtein">0</td>
         <td id="totalCalories">0</td>
         <td id="totalFat">0</td>
+        <td id="totalSugar">0</td>
     </tr>
 
 </table>
@@ -299,7 +312,8 @@ let foods = [];
 let totals = {
     protein:0,
     calories:0,
-    fat:0
+    fat:0,
+    sugar:0
 };
 
 /*
@@ -344,7 +358,8 @@ async function loadFoods(){
                 name:cols[0],
                 protein:Number(cols[1]),
                 calories:Number(cols[2]),
-                fat:Number(cols[3])
+                fat:Number(cols[3]),
+                sugar: Number(cols[4])
             };
 
             foods.push(food);
@@ -463,6 +478,9 @@ function updateTotalsDisplay(){
     document.getElementById("totalFat").textContent =
         totals.fat.toFixed(1);
 
+    document.getElementById("totalSugar").textContent =
+        totals.sugar.toFixed(1);
+
 }
 
 /*
@@ -499,6 +517,9 @@ function addFood(servingMultiplier){
     totals.fat +=
         food.fat * servingMultiplier;
 
+    totals.sugar +=
+        food.sugar * servingMultiplier;
+
     updateTotalsDisplay();
 
     saveLocalState();
@@ -522,7 +543,10 @@ function addCustomMeal(){
     const fat =
         Number(document.getElementById("customFat").value) || 0;
 
-    if(protein === 0 && calories === 0 && fat === 0){
+    const sugar =
+        Number(document.getElementById("customSugar").value) || 0;
+
+    if(protein === 0 && calories === 0 && fat === 0 && sugar === 0){
         alert("Enter at least one value.");
         return;
     }
@@ -530,6 +554,7 @@ function addCustomMeal(){
     totals.protein += protein;
     totals.calories += calories;
     totals.fat += fat;
+    totals.sugar += sugar;
 
     updateTotalsDisplay();
     saveLocalState();
@@ -537,6 +562,7 @@ function addCustomMeal(){
     document.getElementById("customProtein").value = "";
     document.getElementById("customCalories").value = "";
     document.getElementById("customFat").value = "";
+    document.getElementById("customSugar").value = "";
 }
     
     
@@ -567,6 +593,9 @@ function saveLocalState(){
         
         customFat:
             document.getElementById("customFat").value,
+
+        customSugar:
+            document.getElementById("customSugar").value,
 
         totals
 
@@ -608,6 +637,9 @@ function loadLocalState(){
     document.getElementById("customFat").value =
         state.customFat || "";
 
+    document.getElementById("customSugar").value =
+        state.customSugar || "";
+
     totals =
         state.totals || totals;
 
@@ -646,10 +678,13 @@ function clearDailyValues(){
     
     document.getElementById("customFat").value = "";
 
+    document.getElementById("customSugar").value = "";
+
     totals = {
         protein:0,
         calories:0,
-        fat:0
+        fat:0,
+        sugar:0
     };
 
     updateTotalsDisplay();
@@ -692,7 +727,7 @@ async function saveDay(){
         }).format(new Date());
 
         const line =
-`${today},${document.getElementById("exercise").value},${document.getElementById("steps").value},${document.getElementById("bikeRide").value},${totals.protein.toFixed(1)},${totals.calories.toFixed(1)},${totals.fat.toFixed(1)}
+`${today},${document.getElementById("exercise").value},${document.getElementById("steps").value},${document.getElementById("bikeRide").value},${totals.protein.toFixed(1)},${totals.calories.toFixed(1)},${totals.fat.toFixed(1),${totals.sugar.toFixed(1)}
 `;
 
         /*
