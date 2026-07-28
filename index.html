@@ -20,6 +20,30 @@ body{
     background:#f4f4f4;
 }
 
+.user-selector{
+
+    position:absolute;
+    top:12px;
+    left:12px;
+    width:120px;
+
+}
+
+.user-selector label{
+
+    margin:0;
+    font-size:12px;
+
+}
+
+.user-selector select{
+
+    width:120px;
+    padding:4px;
+    font-size:14px;
+
+}
+
 h1{
     text-align:center;
     margin-bottom:20px;
@@ -208,6 +232,27 @@ th{
 </head>
 
 <body>
+
+<div class="user-selector">
+
+<label for="userSelect">
+User
+</label>
+
+<select id="userSelect">
+
+<option value="Barnold">
+Barnold
+</option>
+
+<option value="Sigourney">
+Sigourney
+</option>
+
+</select>
+
+</div>
+
 
 <h1>Fitness Tracker</h1>
 
@@ -427,6 +472,8 @@ let foods = [];
 let eatenToday = [];
 
 let foodHistory = [];
+
+let selectedUser = "Barnold";
     
 let totals = {
     protein:0,
@@ -777,6 +824,9 @@ function saveLocalState(){
 
     const state = {
 
+        user:
+            document.getElementById("userSelect").value,
+        
         exercise:
             document.getElementById("exercise").value,
 
@@ -823,6 +873,12 @@ function loadLocalState(){
     const state =
         JSON.parse(saved);
 
+    document.getElementById("userSelect").value =
+        state.user || "Barnold";
+    
+    selectedUser =
+        state.user || "Barnold";
+    
     document.getElementById("steps").value =
         state.steps || "";
 
@@ -971,7 +1027,7 @@ async function saveDay(){
         }).format(new Date());
 
         const line =
-`${today},${document.getElementById("exercise").value},${document.getElementById("steps").value},${document.getElementById("bikeRide").value},${totals.protein.toFixed(1)},${totals.calories.toFixed(1)},${totals.fat.toFixed(1)},${totals.sugar.toFixed(1)}
+`${selectedUser},${today},${document.getElementById("exercise").value},${document.getElementById("steps").value},${document.getElementById("bikeRide").value},${totals.protein.toFixed(1)},${totals.calories.toFixed(1)},${totals.fat.toFixed(1)},${totals.sugar.toFixed(1)}
 `;
 
         /*
@@ -1120,7 +1176,42 @@ document.addEventListener(
 );
 
 
-// ADD SECTION 5 HERE
+/*
+====================================================
+AUTO SAVE STEPS
+====================================================
+*/
+
+document.addEventListener(
+    "input",
+    function(event){
+
+        if(
+            event.target.id === "steps" ||
+            event.target.id === "bikeRide"
+        ){
+            saveLocalState();
+        }
+
+    }
+);
+
+
+/*
+====================================================
+USER SELECTOR
+====================================================
+*/
+
+document
+.getElementById("userSelect")
+.addEventListener("change", function(){
+
+    selectedUser = this.value;
+
+    saveLocalState();
+
+});
 
 
 document
