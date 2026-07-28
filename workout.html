@@ -135,6 +135,31 @@ button{
 
 }
 
+.button-row{
+
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+
+}
+
+.reset-btn{
+
+    flex:1;
+    background:#757575;
+    color:white;
+
+}
+
+.save-btn{
+
+    flex:2;
+    margin-top:0;
+    background:#4CAF50;
+    color:white;
+
+}
+    
 .github-btn{
 
     width:100%;
@@ -169,7 +194,7 @@ button{
     text-align:center;
 
 }
-
+    
 </style>
 
 </head>
@@ -301,14 +326,21 @@ placeholder="0"
 
 
 
-<button
-class="save-btn"
-onclick="saveExercise()"
->
+<div class="button-row">
 
-Save Exercise
+    <button
+        class="reset-btn"
+        onclick="resetForm()">
+        Reset
+    </button>
 
-</button>
+    <button
+        class="save-btn"
+        onclick="saveExercise()">
+        Save Exercise
+    </button>
+
+</div>
 
 
 </div>
@@ -373,8 +405,7 @@ Save Workout Log
 
 
 <script>
-
-
+    
 /*
 ====================================================
 CONFIGURATION
@@ -727,7 +758,7 @@ REST TIMER
 */
 
 let restCountdown = null;
-
+    
 function startRestTimer(){
 
     // Ignore clicks while timer is running
@@ -778,7 +809,7 @@ function startRestTimer(){
         }
 
     },1000);
-
+    
     function updateButton(){
 
         const mins =
@@ -793,7 +824,59 @@ function startRestTimer(){
     }
 
 }
-    
+
+function resetForm(){
+
+    // Stop rest timer if running
+    if(restCountdown){
+
+        clearInterval(restCountdown);
+        restCountdown = null;
+
+    }
+
+    const restButton =
+        document.getElementById("restButton");
+
+    restButton.disabled = false;
+    restButton.textContent =
+        "Start 2:00 Rest Interval";
+
+    // Reset dropdowns
+    document.getElementById("category").selectedIndex = 0;
+
+    const exercise =
+        document.getElementById("exercise");
+
+    exercise.innerHTML =
+        '<option value="" disabled selected>Select one</option>';
+
+    currentExercise = null;
+
+    // Reset displays
+    document.getElementById("exerciseTitle").textContent =
+        "Select an exercise";
+
+    document.getElementById("weightDisplay").textContent =
+        "-";
+
+    document.getElementById("goalDisplay").textContent =
+        "-";
+
+    // Clear set inputs
+    document.getElementById("set1").value = "";
+    document.getElementById("set2").value = "";
+    document.getElementById("set3").value = "";
+
+    completed = [];
+
+    updateCompleted();
+
+    localStorage.removeItem("workoutTracker");
+
+    document.getElementById("githubToken").value = "";
+
+}
 
 /*
 ====================================================
