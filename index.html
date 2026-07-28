@@ -813,8 +813,10 @@ function addFood(servingMultiplier){
     food.sugar * servingMultiplier;
 
 
-    // TEMPORARY VISUAL FOOD LIST
-    eatenToday.push(food.name);
+    // STORE FOOD WITH SERVING SIZE
+    eatenToday.push(
+        `${food.name} - ${servingMultiplier === 1 ? "Full Serving" : "Half Serving"}`
+    );
     
     updateFoodList();
     
@@ -856,7 +858,7 @@ function addCustomMeal(){
     totals.sugar += sugar;
 
     // TEMPORARY VISUAL FOOD LIST
-    eatenToday.push("Custom Meal");
+    eatenToday.push("Custom Meal - Full Serving");
     
     updateFoodList();
     updateTotalsDisplay();
