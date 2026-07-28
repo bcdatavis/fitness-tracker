@@ -1,6 +1,8 @@
 name,protein,calories,fat,sugar
 apple,0.5,100,0.5,13
 americano (with oat milk),0.5,25,0.5,2
+americano (with oat creamer - caramel),0.5,25,1,2
+americano (with oat creamer - vanilla),0.5,30,1,3
 banana,1.3,100,0.5,15
 banana bread with chocolate chips,3,225,10,25
 bell pepper,1,30,0.3,2.4
@@ -8,12 +10,15 @@ blue berries (2/3 cup),1,45,0,7
 cashews (1/3 cup),7,250,19,2
 chai latte,3,120,7,
 cheddar cheese (shredded),7,120,9,0
+cookie (1x celebration butter),1,75,3,6
+cookie (1x celebration caramel truffle),0.5,75,4,8
 date (6x),0.4,40,0.2,25
 egg,6.5,80,5.5,0
 energy balls (bliss balls),2,110,6,8
 greek yogourt (0% fat),13,80,1,3
 hamburger bun,,,,
 holy crap,5,140,8,0
+hot sauce (valentino's),0,0,0,0
 hummus (2 tbsp),2,45,2.5,1
 ice cream (halo top),7,150,4.5,12
 jam (Strawberry),0.1,50,0,13
@@ -23,6 +28,7 @@ oatmeal,4,120,1.5,9
 oat milk,3,120,5,7
 pizza slice (1x),10,250,9,2
 powdered peanut butter,5,50,1.5,1
+pretzels (1 cup),5,190,0.5,1
 protein bar,13,150,4.5,2
 protein powder,22,120,1.5,0
 slice of whole grain bread,4,80,1,2
