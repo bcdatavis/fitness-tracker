@@ -407,10 +407,10 @@ Sigourney
     </tr>
 
     <tr>
-        <td>120-140</td>
-        <td>2600</td>
-        <td>55-100</td>
-        <td>100-120</td>
+        <td id="goalProtein">120-140</td>
+        <td id="goalCalories">2600</td>
+        <td id="goalFat">55-100</td>
+        <td id="goalSugar">100-120</td>
     </tr>
 </table>
 
@@ -704,6 +704,45 @@ function updateTotalsDisplay(){
 
 }
 
+function updateGoals(){
+
+    const user =
+        document.getElementById("userSelect").value;
+
+
+    if(user === "Sigourney"){
+
+        document.getElementById("goalProtein").textContent =
+            "110-130";
+
+        document.getElementById("goalCalories").textContent =
+            "1650";
+
+        document.getElementById("goalFat").textContent =
+            "45-55";
+
+        document.getElementById("goalSugar").textContent =
+            "100";
+
+    }
+    else{
+
+        document.getElementById("goalProtein").textContent =
+            "120-140";
+
+        document.getElementById("goalCalories").textContent =
+            "2600";
+
+        document.getElementById("goalFat").textContent =
+            "55-100";
+
+        document.getElementById("goalSugar").textContent =
+            "100-120";
+
+    }
+
+}
+    
 function updateFoodList(){
 
     const list =
@@ -1332,6 +1371,8 @@ document
 
     selectedUser = this.value;
 
+    updateGoals();
+
     saveLocalState();
 
 });
@@ -1396,6 +1437,8 @@ INITIALIZE
     await loadExercises();
 
     loadLocalState();
+
+    updateGoals();
 
     loadGitHubToken();
 
