@@ -181,6 +181,24 @@ button{
 
 }
 
+.remember-token-label{
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:normal;
+    margin-top:8px;
+    margin-bottom:0;
+
+}
+
+.remember-token-label input{
+
+    width:auto;
+    margin:0;
+
+}
+    
 .completed{
 
     margin-top:20px;
@@ -422,14 +440,14 @@ placeholder="Paste Token to Save"
 
 >
 
-<label style="font-weight:normal; margin-top:8px;">
+<label class="remember-token-label">
 
 <input
 type="checkbox"
 id="rememberToken"
 >
 
-Remember Token
+<span>Remember Token</span>
 
 </label>
 
