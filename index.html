@@ -739,7 +739,7 @@ function updateFoodList(){
 
 
         text.textContent =
-            "✓ " + food;
+            "✓ " + food.name + " - " + food.serving;
 
 
         const remove =
@@ -756,9 +756,36 @@ function updateFoodList(){
 
         remove.onclick = function(){
 
+
+            // REMOVE NUTRITION FROM TOTALS
+            totals.protein -= food.protein;
+
+            totals.calories -= food.calories;
+
+            totals.fat -= food.fat;
+
+            totals.sugar -= food.sugar;
+
+
+            // PREVENT NEGATIVE ROUNDING ERRORS
+            totals.protein = Math.max(0, totals.protein);
+
+            totals.calories = Math.max(0, totals.calories);
+
+            totals.fat = Math.max(0, totals.fat);
+
+            totals.sugar = Math.max(0, totals.sugar);
+
+
+            // REMOVE FOOD FROM LIST
             eatenToday.splice(index,1);
 
+
+            updateTotalsDisplay();
+
             updateFoodList();
+
+            saveLocalState();
 
         };
 
@@ -813,10 +840,29 @@ function addFood(servingMultiplier){
     food.sugar * servingMultiplier;
 
 
-    // STORE FOOD WITH SERVING SIZE
-    eatenToday.push(
-        `${food.name} - ${servingMultiplier === 1 ? "Full Serving" : "Half Serving"}`
-    );
+    // STORE FOOD WITH NUTRITION DATA
+    eatenToday.push({
+    
+        name: food.name,
+    
+        serving:
+            servingMultiplier === 1
+            ? "Full Serving"
+            : "Half Serving",
+    
+        protein:
+            food.protein * servingMultiplier,
+    
+        calories:
+            food.calories * servingMultiplier,
+    
+        fat:
+            food.fat * servingMultiplier,
+    
+        sugar:
+            food.sugar * servingMultiplier
+    
+    });
     
     updateFoodList();
     
@@ -857,8 +903,21 @@ function addCustomMeal(){
     totals.fat += fat;
     totals.sugar += sugar;
 
-    // TEMPORARY VISUAL FOOD LIST
-    eatenToday.push("Custom Meal - Full Serving");
+    eatenToday.push({
+
+    name:"Custom Meal",
+
+    serving:"Full Serving",
+
+    protein:protein,
+
+    calories:calories,
+
+    fat:fat,
+
+    sugar:sugar
+
+});
     
     updateFoodList();
     updateTotalsDisplay();
@@ -905,7 +964,9 @@ function saveLocalState(){
         customSugar:
             document.getElementById("customSugar").value,
 
-        totals
+        totals,
+
+        eatenToday
 
     };
 
@@ -957,7 +1018,12 @@ function loadLocalState(){
     totals =
         state.totals || totals;
 
+    eatenToday =
+        state.eatenToday || [];
+    
     updateTotalsDisplay();
+
+    updateFoodList();
 
     setTimeout(() => {
 
