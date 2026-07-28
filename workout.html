@@ -239,7 +239,16 @@ Goal
 
 </div>
 
+<div style="text-align:center; margin:12px 0;">
 
+    <button
+        id="restButton"
+        onclick="startRestTimer()"
+        style="background:#2196F3; color:white;">
+        Start 2:00 Rest Interval
+    </button>
+
+</div>
 
 <div class="set-row">
 
@@ -710,6 +719,81 @@ document.getElementById("goalDisplay").textContent =
 
 }
 
+
+/*
+====================================================
+REST TIMER
+====================================================
+*/
+
+let restCountdown = null;
+
+function startRestTimer(){
+
+    // Ignore clicks while timer is running
+    if(restCountdown){
+        return;
+    }
+
+    let seconds = 120;
+
+    const button =
+        document.getElementById("restButton");
+
+    button.disabled = true;
+
+    updateButton();
+
+    restCountdown = setInterval(function(){
+
+        seconds--;
+
+        updateButton();
+
+        if(seconds <= 0){
+
+            clearInterval(restCountdown);
+            restCountdown = null;
+
+            button.textContent = "✔ Rest Complete!";
+
+            button.disabled = false;
+
+            // Optional beep
+            try{
+                new Audio(
+                    "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+                ).play();
+            }
+            catch(e){}
+
+            // Return to original text after 3 seconds
+            setTimeout(function(){
+
+                button.textContent =
+                    "Start 2:00 Rest Interval";
+
+            },3000);
+
+        }
+
+    },1000);
+
+    function updateButton(){
+
+        const mins =
+            Math.floor(seconds/60);
+
+        const secs =
+            String(seconds%60).padStart(2,"0");
+
+        button.textContent =
+            `Rest: ${mins}:${secs}`;
+
+    }
+
+}
+    
 
 /*
 ====================================================
