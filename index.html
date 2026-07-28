@@ -29,16 +29,37 @@ body{
 
 }
 
-.user-selector label{
+.user-button{
 
-    margin:0;
-    font-size:12px;
+    width:120px;
+    padding:5px;
+    font-size:14px;
+    background:#333;
+    color:white;
 
 }
 
-.user-selector select{
+.user-menu{
 
-    width:120px;
+    display:none;
+    background:white;
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    margin-top:4px;
+
+}
+
+.user-menu label{
+
+    font-size:12px;
+    margin:0 0 4px 0;
+
+}
+
+.user-menu select{
+
+    width:100%;
     padding:4px;
     font-size:14px;
 
@@ -235,8 +256,18 @@ th{
 
 <div class="user-selector">
 
+<button 
+    class="user-button"
+    onclick="toggleUserMenu()">
+    User ▾
+</button>
+
+<div 
+    id="userMenu"
+    class="user-menu">
+
 <label for="userSelect">
-User
+Select User
 </label>
 
 <select id="userSelect">
@@ -250,6 +281,8 @@ Sigourney
 </option>
 
 </select>
+
+</div>
 
 </div>
 
@@ -482,6 +515,25 @@ let totals = {
     sugar:0
 };
 
+
+function toggleUserMenu(){
+
+    const menu =
+        document.getElementById("userMenu");
+
+    if(menu.style.display === "block"){
+
+        menu.style.display = "none";
+
+    }
+    else{
+
+        menu.style.display = "block";
+
+    }
+
+}    
+    
 /*
 ====================================================
 LOAD FOODS
