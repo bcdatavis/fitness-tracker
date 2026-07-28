@@ -191,10 +191,32 @@ button{
 }
 
 .completed-item{
-
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
     padding:8px;
     border-bottom:1px solid #ddd;
+}
 
+.completed-item span{
+    flex:1;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}    
+    
+.delete-btn{
+    background:none;
+    border:none;
+    color:#d32f2f;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    padding:6px 10px;
+    line-height:1;
+}
+
+.delete-btn:hover{
+    color:#b71c1c;
 }
 
 .heading{
@@ -964,62 +986,61 @@ document.getElementById("set3").value="";
 UPDATE COMPLETED LIST
 ====================================================
 */
-
-
 function updateCompleted(){
 
+    const list =
+        document.getElementById("completedList");
 
-const list =
+    if(completed.length===0){
 
-document.getElementById("completedList");
+        list.textContent =
+            "No exercises completed.";
 
+        return;
 
+    }
 
-if(completed.length===0){
+    list.innerHTML = "";
 
+    completed.forEach((item,index)=>{
 
-list.textContent =
+        const div =
+            document.createElement("div");
 
-"No exercises completed.";
+        div.className =
+            "completed-item";
 
+        const text =
+            document.createElement("span");
 
-return;
+        text.textContent =
+            `✓ ${item.exercise} (${item.set1 || 0}/${item.set2 || 0}/${item.set3 || 0})`;
 
+        const remove =
+            document.createElement("button");
 
-}
+        remove.className =
+            "delete-btn";
 
+        remove.textContent = "✕";
 
+        remove.onclick = function(){
 
-list.innerHTML = "";
+            completed.splice(index,1);
 
+            saveLocalState();
+            
+            updateCompleted();
 
+        };
 
-completed.forEach(item=>{
+        div.appendChild(text);
 
+        div.appendChild(remove);
 
-const div =
+        list.appendChild(div);
 
-document.createElement("div");
-
-
-div.className =
-
-"completed-item";
-
-
-
-div.textContent =
-
-`✓ ${item.exercise} (${item.set1 || 0}/${item.set2 || 0}/${item.set3 || 0})`;
-
-
-
-list.appendChild(div);
-
-
-
-});
-
+    });
 
 }
 
