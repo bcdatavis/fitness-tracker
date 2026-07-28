@@ -91,6 +91,24 @@ button{
     color:white;
 }
 
+.remember-token-label{
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:normal;
+    margin-top:8px;
+    margin-bottom:0;
+
+}
+
+.remember-token-label input{
+
+    width:auto;
+    margin:0;
+
+}    
+    
 table{
     width:100%;
     border-collapse:collapse;
@@ -362,6 +380,17 @@ th{
     placeholder="Paste Token to Save"
 />
 
+<label class="remember-token-label">
+
+<input
+type="checkbox"
+id="rememberToken"
+>
+
+<span>Remember Token</span>
+
+</label>
+    
 <button
     class="save-btn"
     onclick="saveDay()">
@@ -826,6 +855,27 @@ function loadLocalState(){
 
 }
 
+function loadGitHubToken(){
+
+    const savedToken =
+        localStorage.getItem("githubToken");
+
+    const remember =
+        localStorage.getItem("rememberToken");
+
+
+    if(savedToken && remember === "true"){
+
+        document.getElementById("githubToken").value =
+            savedToken;
+
+        document.getElementById("rememberToken").checked =
+            true;
+
+    }
+
+}
+    
 /*
 ====================================================
 CLEAR FORM AFTER SAVE
@@ -838,7 +888,13 @@ function clearDailyValues(){
 
     document.getElementById("bikeRide").value = "";
 
-    document.getElementById("githubToken").value = "";
+    if(
+    !document.getElementById("rememberToken").checked
+    ){
+    
+        document.getElementById("githubToken").value="";
+    
+    }
 
     document.getElementById("exercise").selectedIndex = 0;
 
@@ -877,6 +933,22 @@ async function saveDay(){
         document.getElementById(
             "githubToken"
         ).value.trim();
+
+    if(
+    document.getElementById("rememberToken").checked
+    ){
+    
+        localStorage.setItem(
+            "githubToken",
+            token
+        );
+    
+        localStorage.setItem(
+            "rememberToken",
+            "true"
+        );
+    
+    }
 
     if(!token){
 
@@ -1033,6 +1105,70 @@ document.addEventListener(
     }
 );
 
+document.addEventListener(
+    "input",
+    function(event){
+
+        if(
+            event.target.id === "steps" ||
+            event.target.id === "bikeRide"
+        ){
+            saveLocalState();
+        }
+
+    }
+);
+
+
+// ADD SECTION 5 HERE
+
+
+document
+.getElementById("rememberToken")
+.addEventListener("change", function(){
+
+    if(this.checked){
+
+        const token =
+            document.getElementById("githubToken").value.trim();
+
+        if(token){
+
+            localStorage.setItem(
+                "githubToken",
+                token
+            );
+
+        }
+
+        localStorage.setItem(
+            "rememberToken",
+            "true"
+        );
+
+    }
+    else{
+
+        localStorage.removeItem(
+            "githubToken"
+        );
+
+        localStorage.removeItem(
+            "rememberToken"
+        );
+
+    }
+
+});
+
+
+
+/*
+====================================================
+INITIALIZE
+====================================================
+*/
+    
 /*
 ====================================================
 INITIALIZE
@@ -1046,6 +1182,8 @@ INITIALIZE
     await loadExercises();
 
     loadLocalState();
+
+    loadGitHubToken();
 
 })();
 
