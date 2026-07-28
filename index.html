@@ -118,6 +118,74 @@ th{
     font-weight:bold;
 }
 
+.food-summary{
+    margin-top:20px;
+    background:white;
+    padding:12px;
+    border-radius:8px;
+}
+
+.food-summary-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px;
+    border-bottom:1px solid #ddd;
+}
+
+.food-summary-item span{
+    flex:1;
+}
+
+.food-delete-btn{
+    background:none;
+    border:none;
+    color:#d32f2f;
+    font-size:18px;
+    font-weight:bold;
+    padding:4px 8px;
+}    
+    
+.completed{
+
+    margin-top:20px;
+    background:white;
+    padding:12px;
+    border-radius:8px;
+
+}
+
+
+.food-item{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px;
+    border-bottom:1px solid #ddd;
+
+}
+
+
+.delete-food-btn{
+
+    background:none;
+    border:none;
+    color:#d32f2f;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    padding:6px 10px;
+
+}
+
+
+.delete-food-btn:hover{
+
+    color:#b71c1c;
+
+}
+    
 </style>
 </head>
 
@@ -174,6 +242,7 @@ th{
     </button>
 </div>
 
+    
 <label class="custom-meal-label">Custom Meal</label>
 
 <div class="form-row">
@@ -270,6 +339,18 @@ th{
 
 </table>
 
+<div class="completed">
+
+    <div class="heading">
+        Foods Eaten Today
+    </div>
+
+    <div id="foodList">
+        No foods recorded.
+    </div>
+
+</div>
+    
 <label for="githubToken">
     GitHub Token (PAT)
 </label>
@@ -314,6 +395,10 @@ GLOBALS
 
 let foods = [];
 
+let eatenToday = [];
+
+let foodHistory = [];
+    
 let totals = {
     protein:0,
     calories:0,
@@ -488,6 +573,77 @@ function updateTotalsDisplay(){
 
 }
 
+function updateFoodList(){
+
+    const list =
+        document.getElementById("foodList");
+
+
+    if(eatenToday.length === 0){
+
+        list.textContent =
+            "No foods recorded.";
+
+        return;
+
+    }
+
+
+    list.innerHTML = "";
+
+
+    eatenToday.forEach((food,index)=>{
+
+
+        const div =
+            document.createElement("div");
+
+
+        div.className =
+            "food-item";
+
+
+        const text =
+            document.createElement("span");
+
+
+        text.textContent =
+            "✓ " + food;
+
+
+        const remove =
+            document.createElement("button");
+
+
+        remove.className =
+            "delete-food-btn";
+
+
+        remove.textContent =
+            "✕";
+
+
+        remove.onclick = function(){
+
+            eatenToday.splice(index,1);
+
+            updateFoodList();
+
+        };
+
+
+        div.appendChild(text);
+
+        div.appendChild(remove);
+
+
+        list.appendChild(div);
+
+
+    });
+
+}
+    
 /*
 ====================================================
 ADD FOOD
@@ -523,10 +679,17 @@ function addFood(servingMultiplier){
         food.fat * servingMultiplier;
 
     totals.sugar +=
-        food.sugar * servingMultiplier;
+    food.sugar * servingMultiplier;
 
+
+    // TEMPORARY VISUAL FOOD LIST
+    eatenToday.push(food.name);
+    
+    updateFoodList();
+    
+    
     updateTotalsDisplay();
-
+    
     saveLocalState();
 
 }
@@ -561,6 +724,10 @@ function addCustomMeal(){
     totals.fat += fat;
     totals.sugar += sugar;
 
+    // TEMPORARY VISUAL FOOD LIST
+    eatenToday.push("Custom Meal");
+    
+    updateFoodList();
     updateTotalsDisplay();
     saveLocalState();
 
