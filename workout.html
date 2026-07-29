@@ -551,6 +551,7 @@ async function loadWorkoutLog(){
             }
 
             const cols = row.split(",").map(x=>x.trim());
+            console.log(cols);
 
             if(cols.length < 7){
                 return;
@@ -565,6 +566,7 @@ async function loadWorkoutLog(){
                 set3: cols[6]
 
             };
+            console.log(previousWorkout);
 
         });
 
