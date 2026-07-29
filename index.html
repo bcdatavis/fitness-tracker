@@ -472,11 +472,23 @@ id="rememberToken"
 
 </label>
     
-<button
-    class="save-btn"
-    onclick="saveDay()">
-    Save
-</button>
+<div class="button-row">
+
+    <button
+        class="half-btn"
+        style="background:#757575;"
+        onclick="resetDay()">
+        Reset
+    </button>
+
+    <button
+        class="save-btn"
+        style="margin-top:0;"
+        onclick="saveDay()">
+        Save
+    </button>
+
+</div>
 
 <script>
 
@@ -1102,43 +1114,71 @@ CLEAR FORM AFTER SAVE
 
 function clearDailyValues(){
 
-    document.getElementById("steps").value = "";
-
-    document.getElementById("bikeRide").value = "";
-
-    if(
-    !document.getElementById("rememberToken").checked
-    ){
-    
-        document.getElementById("githubToken").value="";
-    
-    }
-
+    // Reset dropdowns
     document.getElementById("exercise").selectedIndex = 0;
-
     document.getElementById("foodSelect").selectedIndex = 0;
 
-    document.getElementById("customProtein").value = "";
-    
-    document.getElementById("customCalories").value = "";
-    
-    document.getElementById("customFat").value = "";
+    // Reset text boxes
+    document.getElementById("steps").value = "";
+    document.getElementById("bikeRide").value = "";
 
+    document.getElementById("customProtein").value = "";
+    document.getElementById("customCalories").value = "";
+    document.getElementById("customFat").value = "";
     document.getElementById("customSugar").value = "";
 
+    // Reset totals
     totals = {
+
         protein:0,
         calories:0,
         fat:0,
         sugar:0
+
     };
 
     updateTotalsDisplay();
 
+    // Clear food history
+    eatenToday = [];
+
+    updateFoodList();
+
+    // Restore goal numbers for current user
+    updateGoals();
+
+    // Remove saved state
     localStorage.removeItem("fitnessTracker");
+
+    // Clear GitHub token only if not remembered
+    if(
+        !document.getElementById("rememberToken").checked
+    ){
+
+        document.getElementById("githubToken").value = "";
+
+    }
 
 }
 
+/*
+====================================================
+RESET DAY (WITHOUT SAVING)
+====================================================
+*/
+
+function resetDay(){
+
+    if(!confirm(
+        "Reset today's tracker without saving?"
+    )){
+        return;
+    }
+
+    clearDailyValues();
+
+}
+    
 /*
 ====================================================
 SAVE TO GITHUB
