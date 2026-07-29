@@ -1006,7 +1006,7 @@ function addCustomMeal(){
     const carbs =
         Number(document.getElementById("customCarbs").value) || 0;
 
-    if(protein === 0 && calories === 0 && fat === 0 && sugar === 0){
+    if(protein === 0 && calories === 0 && fat === 0 && sugar === 0 && carbs === 0){
         alert("Enter at least one value.");
         return;
     }
@@ -1015,6 +1015,7 @@ function addCustomMeal(){
     totals.calories += calories;
     totals.fat += fat;
     totals.sugar += sugar;
+    totals.carbs += carbs;
 
     eatenToday.push({
 
@@ -1028,7 +1029,7 @@ function addCustomMeal(){
 
     fat:fat,
 
-    sugar:sugar
+    sugar:sugar,
 
     carbs:carbs
 
@@ -1042,6 +1043,7 @@ function addCustomMeal(){
     document.getElementById("customCalories").value = "";
     document.getElementById("customFat").value = "";
     document.getElementById("customSugar").value = "";
+    document.getElementById("customCarbs").value = "";
 }
     
     
@@ -1301,7 +1303,7 @@ async function saveDay(){
         }).format(new Date());
 
         const line =
-`${document.getElementById("userSelect").value},"${today}",${document.getElementById("exercise").value},${document.getElementById("steps").value},${document.getElementById("bikeRide").value},${totals.protein.toFixed(1)},${totals.calories.toFixed(1)},${totals.fat.toFixed(1)},${totals.sugar.toFixed(1)}
+`${document.getElementById("userSelect").value},"${today}",${document.getElementById("exercise").value},${document.getElementById("steps").value},${document.getElementById("bikeRide").value},${totals.protein.toFixed(1)},${totals.calories.toFixed(1)},${totals.fat.toFixed(1)},${totals.carbs.toFixed(1)}
 `;
 
         /*
