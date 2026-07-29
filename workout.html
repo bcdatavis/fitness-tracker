@@ -543,6 +543,7 @@ async function loadWorkoutLog(){
         const csv = await response.text();
 
         const rows = csv.trim().split("\n");
+        rows.shift();   // Remove header row
 
         rows.forEach(row=>{
 
@@ -550,7 +551,8 @@ async function loadWorkoutLog(){
                 return;
             }
 
-            const cols = row.split(",").map(x=>x.trim());
+            const cols = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)
+               .map(x => x.replace(/^"|"$/g, "").trim());
             console.log(cols);
 
             if(cols.length < 7){
