@@ -308,6 +308,26 @@ Sigourney
 .form-row > div{
     flex:1;
 }
+
+.custom-meal-row{
+    display:grid;
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+    gap:6px;
+}
+
+.custom-meal-row > div{
+    min-width:0;
+}
+
+.custom-meal-row label{
+    font-size:13px;
+}
+
+.custom-meal-row input{
+    padding:4px;
+    font-size:14px;
+}
+    
 </style>
 
 <div class="form-row">
@@ -348,7 +368,7 @@ Sigourney
     
 <label class="custom-meal-label">Custom Meal</label>
 
-<div class="form-row">
+<div class="form-row custom-meal-row">
 
     <div>
         <label for="customProtein">Protein</label>
