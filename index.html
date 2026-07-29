@@ -388,6 +388,15 @@ Sigourney
 
 </div>
 
+<div>
+    <label for="customCarbs">Carbs (g)</label>
+    <input
+        type="number"
+        id="customCarbs"
+        placeholder="0"
+        step="0.1">
+</div>
+
 <div class="custom-button-row">
     <button
         class="full-btn custom-btn"
@@ -398,7 +407,7 @@ Sigourney
 
 <table>
     <tr>
-        <th colspan="4" class="heading">
+        <th colspan="5" class="heading">
             Goals
         </th>
     </tr>
@@ -408,6 +417,7 @@ Sigourney
         <th>Calories</th>
         <th>Fat (g)</th>
         <th>Sugar (g)</th>
+        <th>Carbs (g)</th>
     </tr>
 
     <tr>
@@ -415,13 +425,14 @@ Sigourney
         <td id="goalCalories">2400-2650</td>
         <td id="goalFat">85</td>
         <td id="goalSugar">100-120</td>
+        <td id="goalCarbs">300</td>
     </tr>
 </table>
 
 <table>
 
     <tr>
-        <th colspan="4" class="heading">
+        <th colspan="5" class="heading">
             Daily Totals
         </th>
     </tr>
@@ -431,6 +442,7 @@ Sigourney
         <th>Calories</th>
         <th>Fat (g)</th>
         <th>Sugar (g)</th>
+        <th>Carbs (g)</th>
     </tr>
 
     <tr class="summary">
@@ -438,6 +450,7 @@ Sigourney
         <td id="totalCalories">0</td>
         <td id="totalFat">0</td>
         <td id="totalSugar">0</td>
+        <td id="totalCarbs">0</td>
     </tr>
 
 </table>
@@ -531,7 +544,8 @@ let totals = {
     protein:0,
     calories:0,
     fat:0,
-    sugar:0
+    sugar:0,
+    carbs:0
 };
 
 
@@ -596,7 +610,8 @@ async function loadFoods(){
                 protein:Number(cols[1]),
                 calories:Number(cols[2]),
                 fat:Number(cols[3]),
-                sugar: Number(cols[4])
+                sugar: Number(cols[4]),
+                carbs:Number(cols[5]) || 0
             };
 
             foods.push(food);
@@ -718,6 +733,9 @@ function updateTotalsDisplay(){
     document.getElementById("totalSugar").textContent =
         totals.sugar.toFixed(1);
 
+    document.getElementById("totalCarbs").textContent =
+        totals.carbs.toFixed(1);
+
 }
 
 function updateGoals(){
@@ -740,6 +758,9 @@ function updateGoals(){
         document.getElementById("goalSugar").textContent =
             "100";
 
+        document.getElementById("goalCarbs").textContent =
+            "275-340";
+
     }
     else{
 
@@ -747,13 +768,16 @@ function updateGoals(){
             "120-150";
 
         document.getElementById("goalCalories").textContent =
-            "2680";
+            "24-2650";
 
         document.getElementById("goalFat").textContent =
             "55-80";
 
         document.getElementById("goalSugar").textContent =
             "100-120";
+
+        document.getElementById("goalCarbs").textContent =
+            "300";
 
     }
 
@@ -821,6 +845,8 @@ function updateFoodList(){
 
             totals.sugar -= food.sugar;
 
+            totals.carbs -= food.carbs;
+
 
             // PREVENT NEGATIVE ROUNDING ERRORS
             totals.protein = Math.max(0, totals.protein);
@@ -830,6 +856,8 @@ function updateFoodList(){
             totals.fat = Math.max(0, totals.fat);
 
             totals.sugar = Math.max(0, totals.sugar);
+
+            totals.carbs = Math.max(0, totals.carbs);
 
 
             // REMOVE FOOD FROM LIST
@@ -894,6 +922,9 @@ function addFood(servingMultiplier){
     totals.sugar +=
     food.sugar * servingMultiplier;
 
+    totals.carbs +=
+    food.carbs * servingMultiplier;
+
 
     // STORE FOOD WITH NUTRITION DATA
     eatenToday.push({
@@ -915,7 +946,10 @@ function addFood(servingMultiplier){
             food.fat * servingMultiplier,
     
         sugar:
-            food.sugar * servingMultiplier
+            food.sugar * servingMultiplier,
+
+        carbs:
+            food.carbs * servingMultiplier
     
     });
     
