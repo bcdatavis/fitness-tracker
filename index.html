@@ -1003,6 +1003,9 @@ function addCustomMeal(){
     const sugar =
         Number(document.getElementById("customSugar").value) || 0;
 
+    const carbs =
+        Number(document.getElementById("customCarbs").value) || 0;
+
     if(protein === 0 && calories === 0 && fat === 0 && sugar === 0){
         alert("Enter at least one value.");
         return;
@@ -1026,6 +1029,8 @@ function addCustomMeal(){
     fat:fat,
 
     sugar:sugar
+
+    carbs:carbs
 
 });
     
@@ -1073,6 +1078,9 @@ function saveLocalState(){
 
         customSugar:
             document.getElementById("customSugar").value,
+
+        customCarbs:
+            document.getElementById("customCarbs").value,
 
         totals,
 
@@ -1124,6 +1132,9 @@ function loadLocalState(){
 
     document.getElementById("customSugar").value =
         state.customSugar || "";
+
+    document.getElementById("customCarbs").value =
+        state.customCarbs || "";
 
     totals =
         state.totals || totals;
@@ -1185,6 +1196,7 @@ function clearDailyValues(){
     document.getElementById("customCalories").value = "";
     document.getElementById("customFat").value = "";
     document.getElementById("customSugar").value = "";
+    document.getElementById("customCarbs").value = "";
 
     // Reset totals
     totals = {
@@ -1192,7 +1204,8 @@ function clearDailyValues(){
         protein:0,
         calories:0,
         fat:0,
-        sugar:0
+        sugar:0,
+        carbs:0
 
     };
 
