@@ -1276,16 +1276,6 @@ const state = {
 completed:completed,
 
 
-category:
-
-document.getElementById("category").value,
-
-
-exercise:
-
-document.getElementById("exercise").value
-
-
 };
 
 
@@ -1337,42 +1327,7 @@ completed =
 state.completed || [];
 
 
-
 updateCompleted();
-
-
-
-setTimeout(()=>{
-
-
-document.getElementById("category").value =
-
-state.category || "";
-
-
-
-populateExercises();
-
-
-
-setTimeout(()=>{
-
-
-document.getElementById("exercise").value =
-
-state.exercise || "";
-
-
-
-displayExercise();
-
-
-
-},200);
-
-
-
-},500);
 
 
 
