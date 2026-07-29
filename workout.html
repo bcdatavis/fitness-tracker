@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="img/favicon.png" type="image/png">
 
-<title>Workout Tracker</title>
+<title>Workout Tracker-v2</title>
 
 <style>
 
@@ -551,24 +551,21 @@ async function loadWorkoutLog(){
                 return;
             }
 
-            const cols = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)
-               .map(x => x.replace(/^"|"$/g, "").trim());
-            console.log(cols);
+            const cols = parseCSVLine(row);
 
             if(cols.length < 7){
                 return;
             }
-
+            
             const exercise = cols[2];
-
+            
             previousWorkout[exercise] = {
-
+            
                 set1: cols[4],
                 set2: cols[5],
                 set3: cols[6]
-
+            
             };
-            console.log(previousWorkout);
 
         });
 
@@ -579,8 +576,56 @@ async function loadWorkoutLog(){
 
     }
 
+console.log("Previous workouts:", previousWorkout);
 }
 
+/*
+====================================================
+PARSE A SINGLE CSV LINE
+Handles commas inside quoted fields.
+====================================================
+*/
+
+function parseCSVLine(line){
+
+    const result = [];
+
+    let current = "";
+
+    let inQuotes = false;
+
+    for(let i=0;i<line.length;i++){
+
+        const c = line[i];
+
+        if(c === '"'){
+
+            inQuotes = !inQuotes;
+
+        }
+
+        else if(c === "," && !inQuotes){
+
+            result.push(current);
+
+            current = "";
+
+        }
+
+        else{
+
+            current += c;
+
+        }
+
+    }
+
+    result.push(current);
+
+    return result.map(x=>x.trim());
+
+}
+    
 /*
 ====================================================
 LOAD WORKOUT CSV
@@ -875,14 +920,20 @@ document.getElementById("goalDisplay").textContent =
 
 const previous = previousWorkout[currentExercise.exercise];
 
-document.getElementById("set1").value =
-    previous ? previous.set1 : "";
+// Always start with empty inputs
+document.getElementById("set1").value = "";
+document.getElementById("set2").value = "";
+document.getElementById("set3").value = "";
 
-document.getElementById("set2").value =
-    previous ? previous.set2 : "";
+// Show previous workout as grey placeholder text
+document.getElementById("set1").placeholder =
+    previous?.set1 || "0";
 
-document.getElementById("set3").value =
-    previous ? previous.set3 : "";
+document.getElementById("set2").placeholder =
+    previous?.set2 || "0";
+
+document.getElementById("set3").placeholder =
+    previous?.set3 || "0";
 
 }
 
