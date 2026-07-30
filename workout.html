@@ -312,6 +312,11 @@ Weight
 </span>
 </div>
 
+<div>
+Previously Sets
+<br>
+<span id="previousDateDisplay">-</span>
+</div>
 
 <div>
 Goal Reps/Sets
@@ -560,7 +565,8 @@ async function loadWorkoutLog(){
             const exercise = cols[2];
             
             previousWorkout[exercise] = {
-            
+
+                date: cols[0],
                 set1: cols[4],
                 set2: cols[5],
                 set3: cols[6]
@@ -911,7 +917,9 @@ document.getElementById("weightDisplay").textContent =
 
 currentExercise.weight;
 
-
+document.getElementById("previousDateDisplay").textContent =
+    previous?.date || "-";
+    
 
 document.getElementById("goalDisplay").textContent =
 
@@ -1046,6 +1054,8 @@ function resetForm(){
 
     document.getElementById("weightDisplay").textContent =
         "-";
+
+    document.getElementById("previousDateDisplay").textContent = "-";
 
     document.getElementById("goalDisplay").textContent =
         "-";
