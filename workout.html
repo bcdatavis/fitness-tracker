@@ -566,7 +566,7 @@ async function loadWorkoutLog(){
             
             previousWorkout[exercise] = {
 
-                date: cols[0],
+                date: cols[0].replace(/^"|"$/g, ""),
                 set1: cols[4],
                 set2: cols[5],
                 set3: cols[6]
@@ -933,66 +933,48 @@ function formatPreviousWorkout(dateString){
 
 function displayExercise(){
 
+    const name =
+        document.getElementById("exercise").value;
 
-const name =
+    currentExercise =
+        exercises.find(
+            x => x.exercise === name
+        );
 
-document.getElementById("exercise").value;
+    if(!currentExercise){
+        return;
+    }
 
+    // Get the previous workout for this exercise
+    const previous =
+        previousWorkout[currentExercise.exercise];
 
+    document.getElementById("exerciseTitle").textContent =
+        currentExercise.exercise;
 
-currentExercise =
+    document.getElementById("weightDisplay").textContent =
+        currentExercise.weight;
 
-exercises.find(
+    document.getElementById("previousDateDisplay").textContent =
+        formatPreviousWorkout(previous?.date);
 
-x=>x.exercise===name
+    document.getElementById("goalDisplay").textContent =
+        `${currentExercise.set1 || "-"} / ${currentExercise.set2 || "-"} / ${currentExercise.set3 || "-"}`;
 
-);
+    // Always start with empty inputs
+    document.getElementById("set1").value = "";
+    document.getElementById("set2").value = "";
+    document.getElementById("set3").value = "";
 
+    // Show previous workout as grey placeholder text
+    document.getElementById("set1").placeholder =
+        previous?.set1 || "0";
 
+    document.getElementById("set2").placeholder =
+        previous?.set2 || "0";
 
-if(!currentExercise){
-
-return;
-
-}
-
-
-
-document.getElementById("exerciseTitle").textContent =
-
-currentExercise.exercise;
-
-
-
-document.getElementById("weightDisplay").textContent =
-
-currentExercise.weight;
-
-document.getElementById("previousDateDisplay").textContent =
-    formatPreviousWorkout(previous?.date);
-    
-
-document.getElementById("goalDisplay").textContent =
-
-`${currentExercise.set1 || "-"} / ${currentExercise.set2 || "-"} / ${currentExercise.set3 || "-"}`;
-
-
-const previous = previousWorkout[currentExercise.exercise];
-
-// Always start with empty inputs
-document.getElementById("set1").value = "";
-document.getElementById("set2").value = "";
-document.getElementById("set3").value = "";
-
-// Show previous workout as grey placeholder text
-document.getElementById("set1").placeholder =
-    previous?.set1 || "0";
-
-document.getElementById("set2").placeholder =
-    previous?.set2 || "0";
-
-document.getElementById("set3").placeholder =
-    previous?.set3 || "0";
+    document.getElementById("set3").placeholder =
+        previous?.set3 || "0";
 
 }
 
