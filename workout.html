@@ -313,7 +313,7 @@ Weight
 </div>
 
 <div>
-Previously Sets
+Last Workout
 <br>
 <span id="previousDateDisplay">-</span>
 </div>
@@ -879,6 +879,57 @@ exerciseSelect.appendChild(option);
 }
 
 
+function formatPreviousWorkout(dateString){
+
+    if(!dateString){
+        return "-";
+    }
+
+    // Remove weekday if present
+    // Example:
+    // "Tuesday, July 21, 2026"
+    // becomes
+    // "July 21, 2026"
+
+    const cleaned =
+        dateString.replace(/^[^,]+,\s*/, "");
+
+    const previousDate =
+        new Date(cleaned);
+
+    if(isNaN(previousDate)){
+        return dateString;
+    }
+
+    const today = new Date();
+
+    const diffDays =
+        Math.floor(
+            (today - previousDate) /
+            (1000 * 60 * 60 * 24)
+        );
+
+    const shortDate =
+        previousDate.toLocaleDateString(
+            "en-US",
+            {
+                month:"short",
+                day:"numeric"
+            }
+        );
+
+    if(diffDays === 0){
+        return `Today (${shortDate})`;
+    }
+
+    if(diffDays === 1){
+        return `1 day ago (${shortDate})`;
+    }
+
+    return `${diffDays} days ago (${shortDate})`;
+
+}    
+    
 
 function displayExercise(){
 
@@ -918,7 +969,7 @@ document.getElementById("weightDisplay").textContent =
 currentExercise.weight;
 
 document.getElementById("previousDateDisplay").textContent =
-    previous?.date || "-";
+    formatPreviousWorkout(previous?.date);
     
 
 document.getElementById("goalDisplay").textContent =
