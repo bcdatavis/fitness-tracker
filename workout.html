@@ -253,6 +253,11 @@ input::placeholder{
     opacity:1;
 
 }
+
+.warning-rest{
+    color:#d32f2f;
+    font-weight:bold;
+}    
     
 </style>
 
@@ -955,9 +960,29 @@ function displayExercise(){
     document.getElementById("weightDisplay").textContent =
         currentExercise.weight;
 
-    document.getElementById("previousDateDisplay").textContent =
+    const previousDateDisplay =
+        document.getElementById("previousDateDisplay");
+    
+    previousDateDisplay.textContent =
         formatPreviousWorkout(previous?.date);
-
+    
+    // Default appearance
+    previousDateDisplay.classList.remove("warning-rest");
+    
+    // Calculate days since previous workout
+    const days =
+        getDaysSinceWorkout(previous?.date);
+    
+    // Warn only for Arms and Legs & Core if fewer than 2 days
+    if(
+        (currentExercise.category === "arms" ||
+         currentExercise.category === "legs & core") &&
+        days >= 0 &&
+        days < 2
+    ){
+        previousDateDisplay.classList.add("warning-rest");
+    }
+    
     document.getElementById("goalDisplay").textContent =
         `${currentExercise.set1 || "-"} / ${currentExercise.set2 || "-"} / ${currentExercise.set3 || "-"}`;
 
@@ -979,6 +1004,41 @@ function displayExercise(){
 }
 
 
+function getDaysSinceWorkout(dateString){
+
+    if(!dateString){
+        return -1;
+    }
+
+    // Remove the weekday
+    // Example:
+    // "Tuesday, July 21, 2026"
+    // becomes
+    // "July 21, 2026"
+
+    const cleaned =
+        dateString.replace(/^[^,]+,\s*/, "");
+
+    const previousDate =
+        new Date(cleaned);
+
+    if(isNaN(previousDate)){
+        return -1;
+    }
+
+    const today = new Date();
+
+    // Ignore the time of day
+    today.setHours(0,0,0,0);
+    previousDate.setHours(0,0,0,0);
+
+    return Math.round(
+        (today - previousDate) /
+        (1000 * 60 * 60 * 24)
+    );
+
+}    
+    
 /*
 ====================================================
 REST TIMER
