@@ -20,10 +20,10 @@ arms,Isometrics – tricep hold,red tube,1,1,1,2
 arms,step forward band,yellow band,6,6,0,1
 arms,seated low row,red tube,4,4,0,1
 alternate,neuro mobility slump,body,1,1,0,0
-alternate,seated calf raise with dumbbell,8,8,8,0
-alternate,side lying hip abduction,4,4,0,0
-alternate,tricep extensions,5,5,0,0
-alternate,wrist rotation,8,8,0,0
+alternate,seated calf raise with dumbbell,5,8,8,8,0
+alternate,side lying hip abduction,body,4,4,0,0
+alternate,tricep extensions,3,5,5,0,0
+alternate,wrist rotation,dowel,8,8,0,0
 legs & core,calf raises (standing double leg),body,5,5,5,2
 legs & core,dead bug,body,6,6,6,2
 legs & core,bird dog,body,6,6,6,2
