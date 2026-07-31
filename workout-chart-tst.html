@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker Progress Dashboard</title>
+    <!-- Include PapaParse for reliable CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        p {
+            text-align: center;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Workout Progress vs. Goals (Last 7 Days)</h1>
+    <p>Target rule: Complete exercises from main categories at least <strong>2 days per week</strong> (Alternates excluded).</p>
+    
+    <table id="progressTable">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Exercise Completion</th>
+                <th>Progress</th>
+                <th>Adherence</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated dynamically via JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const goalsUrl = 'https://raw.githubusercontent.com/bcdatavis/fitness-tracker/refs/heads/main/data/workout.csv';
+    const logUrl = 'https://raw.githubusercontent.com/bcdatavis/fitness-tracker/refs/heads/main/log/workout-log.csv';
+
+    async function loadData() {
+        try {
+            const [goalsRes, logRes] = await Promise.all([
+                fetch(goalsUrl),
+                fetch(logUrl)
+            ]);
+
+            const goalsText = await goalsRes.text();
+            const logText = await logRes.text();
+
+            const goalsData = Papa.parse(goalsText, { header: true }).data;
+            const logData = Papa.parse(logText, { header: true }).data;
+
+            processAndRenderTable(goalsData, logData);
+        } catch (error) {
+            console.error('Error loading fitness data:', error);
+        }
+    }
+
+    function processAndRenderTable(goals, logs) {
+        const categoryStats = {};
+
+        // 1. Map expected exercises per category from workout.csv
+        goals.forEach(row => {
+            if (!row.category || !row.exercise) return;
+            const cat = row.category.trim().toLowerCase();
+            const ex = row.exercise.trim().toLowerCase();
+
+            if (!categoryStats[cat]) {
+                categoryStats[cat] = {
+                    displayName: row.category.trim(),
+                    uniqueExercises: new Set()
+                };
+            }
+            categoryStats[cat].uniqueExercises.add(ex);
+        });
+
+        // Initialize tracking structures for the rolling 7-day window
+        const today = new Date('2026-07-31T00:00:00');
+        const cutoffDate = new Date(today);
+        cutoffDate.setDate(today.getDate() - 7);
+
+        const completedExercisesPerCategory = {};
+        const categoryDaysHit = {};
+
+        Object.keys(categoryStats).forEach(cat => {
+            completedExercisesPerCategory[cat] = new Set();
+            categoryDaysHit[cat] = new Set();
+        });
+
+        // 2. Filter and process logs within the 7-day rolling window
+        logs.forEach(row => {
+            if (!row.Category || !row.Exercise || !row.Date) return;
+            
+            const cleanDateStr = row.Date.replace(/"/g, '').trim();
+            const logDate = new Date(cleanDateStr);
+
+            if (isNaN(logDate) || logDate < cutoffDate || logDate > today) return;
+
+            const cat = row.Category.trim().toLowerCase();
+            const ex = row.Exercise.trim().toLowerCase();
+
+            if (categoryStats[cat]) {
+                let performed = false;
+                ['Set-1', 'Set-2', 'Set-3'].forEach(setKey => {
+                    let val = row[setKey];
+                    if (val !== undefined && val !== '' && !isNaN(val) && Number(val) > 0) {
+                        performed = true;
+                    }
+                });
+
+                if (performed) {
+                    completedExercisesPerCategory[cat].add(ex);
+                    categoryDaysHit[cat].add(cleanDateStr);
+                }
+            }
+        });
+
+        // 3. Render the table
+        const tbody = document.querySelector('#progressTable tbody');
+        tbody.innerHTML = '';
+
+        Object.keys(categoryStats).forEach(catKey => {
+            const stats = categoryStats[catKey];
+            const totalTarget = stats.uniqueExercises.size;
+            const completedCount = completedExercisesPerCategory[catKey].size;
+
+            const progressPct = totalTarget > 0 ? Math.round((completedCount / totalTarget) * 100) : 0;
+
+            let adherenceDisplay = '';
+            
+            // Check if category is "alternate"
+            if (catKey === 'alternate') {
+                adherenceDisplay = `${completedCount} logged (N/A)`;
+            } else {
+                // Apply the 2-day per week rule for main categories
+                const daysHitCount = categoryDaysHit[catKey].size;
+                const adherencePct = Math.min(100, Math.round((daysHitCount / 2) * 100));
+                adherenceDisplay = `${daysHitCount} / 2 days (${adherencePct}%)`;
+            }
+
+            const formattedCategoryName = stats.displayName.charAt(0).toUpperCase() + stats.displayName.slice(1);
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${formattedCategoryName}</td>
+                <td>${completedCount} / ${totalTarget}</td>
+                <td>${progressPct}%</td>
+                <td>${adherenceDisplay}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    loadData();
+</script>
+
+</body>
+</html>
