@@ -53,7 +53,7 @@
 
 <div class="container">
     <h1>Workout Progress vs. Goals (Last 7 Days)</h1>
-    <p>2 days per week, per category (Alternates excluded).</p>
+    <p>Adherence calculated dynamically using individual exercise <strong>Weekly-Frequency</strong> targets from `workout.csv`.</p>
     
     <table id="progressTable">
         <thead>
@@ -61,7 +61,7 @@
                 <th>Category</th>
                 <th>Exercise Completion</th>
                 <th>Progress</th>
-                <th>Adherence</th>
+                <th>Adherence (Frequency Met)</th>
             </tr>
         </thead>
         <tbody>
@@ -96,19 +96,20 @@
     function processAndRenderTable(goals, logs) {
         const categoryStats = {};
 
-        // 1. Map expected exercises per category from workout.csv
+        // 1. Map expected exercises and their target weekly frequency from workout.csv
         goals.forEach(row => {
             if (!row.category || !row.exercise) return;
             const cat = row.category.trim().toLowerCase();
             const ex = row.exercise.trim().toLowerCase();
+            const targetFreq = parseInt(row['Weekly-Frequency']) || 0;
 
             if (!categoryStats[cat]) {
                 categoryStats[cat] = {
                     displayName: row.category.trim(),
-                    uniqueExercises: new Set()
+                    exercises: {} // Map exercise name to its target frequency
                 };
             }
-            categoryStats[cat].uniqueExercises.add(ex);
+            categoryStats[cat].exercises[ex] = targetFreq;
         });
 
         // Initialize tracking structures for the rolling 7-day window
@@ -116,12 +117,13 @@
         const cutoffDate = new Date(today);
         cutoffDate.setDate(today.getDate() - 7);
 
-        const completedExercisesPerCategory = {};
-        const categoryDaysHit = {};
-
+        // Track how many unique days *each specific exercise* was performed in the last 7 days
+        const exerciseDaysHit = {};
         Object.keys(categoryStats).forEach(cat => {
-            completedExercisesPerCategory[cat] = new Set();
-            categoryDaysHit[cat] = new Set();
+            exerciseDaysHit[cat] = {};
+            Object.keys(categoryStats[cat].exercises).forEach(ex => {
+                exerciseDaysHit[cat][ex] = new Set();
+            });
         });
 
         // 2. Filter and process logs within the 7-day rolling window
@@ -136,7 +138,7 @@
             const cat = row.Category.trim().toLowerCase();
             const ex = row.Exercise.trim().toLowerCase();
 
-            if (categoryStats[cat]) {
+            if (categoryStats[cat] && categoryStats[cat].exercises[ex] !== undefined) {
                 let performed = false;
                 ['Set-1', 'Set-2', 'Set-3'].forEach(setKey => {
                     let val = row[setKey];
@@ -146,8 +148,7 @@
                 });
 
                 if (performed) {
-                    completedExercisesPerCategory[cat].add(ex);
-                    categoryDaysHit[cat].add(cleanDateStr);
+                    exerciseDaysHit[cat][ex].add(cleanDateStr);
                 }
             }
         });
@@ -158,21 +159,42 @@
 
         Object.keys(categoryStats).forEach(catKey => {
             const stats = categoryStats[catKey];
-            const totalTarget = stats.uniqueExercises.size;
-            const completedCount = completedExercisesPerCategory[catKey].size;
+            const exerciseMap = stats.exercises;
+            const totalTargetExercises = Object.keys(exerciseMap).length;
 
-            const progressPct = totalTarget > 0 ? Math.round((completedCount / totalTarget) * 100) : 0;
+            let completedUniqueCount = 0;
+            let totalAdherencePointsEarned = 0;
+            let totalAdherencePointsPossible = 0;
 
+            Object.keys(exerciseMap).forEach(ex => {
+                const targetFreq = exerciseMap[ex];
+                const daysPerformed = exerciseDaysHit[catKey][ex].size;
+
+                // Count as completed if performed at least once in the window
+                if (daysPerformed > 0) {
+                    completedUniqueCount++;
+                }
+
+                // Skip alternate exercises (Weekly-Frequency = 0) from adherence weight calculations
+                if (catKey !== 'alternate' && targetFreq > 0) {
+                    totalAdherencePointsPossible += targetFreq;
+                    // Cap adherence credit at the target frequency per exercise
+                    totalAdherencePointsEarned += Math.min(targetFreq, daysPerformed);
+                }
+            });
+
+            // Progress percentage (Unique exercises touched vs total unique exercises in category)
+            const progressPct = totalTargetExercises > 0 ? Math.round((completedUniqueCount / totalTargetExercises) * 100) : 0;
+
+            // Adherence calculation
             let adherenceDisplay = '';
-            
-            // Check if category is "alternate"
             if (catKey === 'alternate') {
-                adherenceDisplay = `${completedCount} logged (N/A)`;
+                adherenceDisplay = `${completedUniqueCount} logged (N/A)`;
             } else {
-                // Apply the 2-day per week rule for main categories
-                const daysHitCount = categoryDaysHit[catKey].size;
-                const adherencePct = Math.min(100, Math.round((daysHitCount / 2) * 100));
-                adherenceDisplay = `${daysHitCount} / 2 days (${adherencePct}%)`;
+                const adherencePct = totalAdherencePointsPossible > 0 
+                    ? Math.round((totalAdherencePointsEarned / totalAdherencePointsPossible) * 100) 
+                    : 0;
+                adherenceDisplay = `${totalAdherencePointsEarned} / ${totalAdherencePointsPossible} sessions (${adherencePct}%)`;
             }
 
             const formattedCategoryName = stats.displayName.charAt(0).toUpperCase() + stats.displayName.slice(1);
@@ -180,7 +202,7 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${formattedCategoryName}</td>
-                <td>${completedCount} / ${totalTarget}</td>
+                <td>${completedUniqueCount} / ${totalTargetExercises}</td>
                 <td>${progressPct}%</td>
                 <td>${adherenceDisplay}</td>
             `;
