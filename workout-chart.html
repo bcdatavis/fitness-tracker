@@ -10,7 +10,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             background-color: #f4f4f9;
             color: #333;
         }
@@ -18,22 +18,24 @@
             max-width: 900px;
             margin: auto;
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         h1 {
             text-align: center;
             color: #2c3e50;
+            font-size: 1.4rem;
         }
         p {
             text-align: center;
             color: #666;
+            font-size: 0.9rem;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 25px;
+            margin-top: 20px;
         }
         th, td {
             padding: 12px 15px;
@@ -47,12 +49,78 @@
         tr:hover {
             background-color: #f1f1f1;
         }
+
+        /* Mobile Responsive Card Styling */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            .container {
+                padding: 10px;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            tr {
+                margin-bottom: 15px;
+                background: #fff;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                padding: 10px;
+            }
+            tr:hover {
+                background-color: #fff;
+            }
+            td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding: 8px 8px 8px 45%;
+                text-align: right;
+                font-size: 0.95rem;
+            }
+            td:last-child {
+                border-bottom: none;
+            }
+            /* Inject mobile labels dynamically via data attributes */
+            td::before {
+                position: absolute;
+                top: 8px;
+                left: 8px;
+                width: 40%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: #2c3e50;
+                content: attr(data-label);
+            }
+            /* Special styling for category header on mobile */
+            td:first-child {
+                font-size: 1.1rem;
+                font-weight: bold;
+                background-color: #f8f9fa;
+                border-radius: 6px;
+                text-align: left;
+                padding-left: 12px;
+            }
+            td:first-child::before {
+                content: none;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Completed Weekly Exercise vs. Goals (Last 7 Days)</h1>
+    <h1>Completed Weekly Exercise vs. Goals</h1>
+    <p>Last 7 Days Rolling Window</p>
     
     <table id="progressTable">
         <thead>
@@ -200,10 +268,10 @@
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${formattedCategoryName}</td>
-                <td>${completedUniqueCount} / ${totalTargetExercises}</td>
-                <td>${progressPct}%</td>
-                <td>${adherenceDisplay}</td>
+                <td data-label="Category">${formattedCategoryName}</td>
+                <td data-label="Exercise Completion">${completedUniqueCount} / ${totalTargetExercises}</td>
+                <td data-label="Progress">${progressPct}%</td>
+                <td data-label="Adherence">${adherenceDisplay}</td>
             `;
             tbody.appendChild(tr);
         });
