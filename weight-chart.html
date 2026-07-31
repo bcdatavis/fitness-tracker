@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body Weight Tracker</title>
+    <!-- Include Chart.js for graphing -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.4rem;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        input[type="number"] {
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 12px;
+            font-size: 1rem;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #34495e;
+        }
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            margin-top: 25px;
+        }
+        #statusMessage {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Body Weight Tracker</h1>
+    
+    <div class="form-group">
+        <label for="weightInput">Enter Today's Weight (lbs):</label>
+        <input type="number" id="weightInput" step="0.1" placeholder="e.g., 152.5">
+        <button id="saveBtn">Save Weight</button>
+        <div id="statusMessage"></div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="weightChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // GitHub Raw URL for reading
+    const weightLogUrl = 'https://raw.githubusercontent.com/bcdatavis/fitness-tracker/refs/heads/main/log/weight-log.csv';
+    
+    // Note: To automatically *write* back to a GitHub repository file directly from a static browser page, 
+    // you typically need a GitHub Personal Access Token (PAT) or a serverless function endpoint (like GitHub Actions/API).
+    // For this client-side mockup, we will simulate saving or provide instructions for GitHub integration.
+
+    let weightChartInstance = null;
+
+    async function loadWeightData() {
+        try {
+            const response = await fetch(weightLogUrl);
+            const csvText = await response.text();
+            
+            const parsedData = Papa.parse(csvText, { header: true }).data;
+            
+            const dates = [];
+            const weights = [];
+
+            parsedData.forEach(row => {
+                if (row.Weight && !isNaN(row.Weight)) {
+                    // If your CSV has dates, parse them here. Assuming standard sequence or date field if available.
+                    // If weight-log only has weight, we can use an index or sequence date. Let's check for a Date column if present.
+                    dates.value = row.Date || 'Entry';
+                    weights.push(parseFloat(row.Weight));
+                    dates.push(row.Date || `Log ${dates.length + 1}`);
+                }
+            });
+
+            renderChart(dates, weights);
+        } catch (error) {
+            console.error('Error loading weight log:', error);
+        }
+    }
+
+    function renderChart(labels, dataPoints) {
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        
+        if (weightChartInstance) {
+            weightChartInstance.destroy();
+        }
+
+        // Custom plugin to draw horizontal limit lines
+        const limitLinesPlugin = {
+            id: 'limitLines',
+            afterDraw(chart) {
+                const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+                
+                // Bottom line at 150 lbs (Red)
+                const y150 = y.getPixelForValue(150);
+                ctx.save();
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(left, y150);
+                ctx.lineTo(right, y150);
+                ctx.stroke();
+                ctx.restore();
+
+                // Top line at 155 lbs (Green)
+                const y155 = y.getPixelForValue(155);
+                ctx.save();
+                ctx.strokeStyle = 'green';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(left, y155);
+                ctx.lineTo(right, y155);
+                ctx.stroke();
+                ctx.restore();
+            }
+        };
+
+        weightChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Body Weight (lbs)',
+                    data: dataPoints,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        suggestedMin: 140,
+                        suggestedMax: 165,
+                        title: {
+                            display: true,
+                            text: 'Weight (lbs)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date / Entry'
+                        }
+                    }
+                }
+            },
+            plugins: [limitLinesPlugin]
+        });
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', () => {
+        const val = document.getElementById('weightInput').value;
+        const statusEl = document.getElementById('statusMessage');
+        
+        if (!val) {
+            alert('Please enter a weight value.');
+            return;
+        }
+
+        // GitHub raw files are read-only directly from the browser without authentication.
+        // To commit this automatically to GitHub via web app, you would use the GitHub REST API with a token.
+        statusEl.textContent = `Weight ${val} lbs captured! (Connect GitHub API token to commit to repo).`;
+        document.getElementById('weightInput').value = '';
+    });
+
+    // Load initial data on startup
+    loadWeightData();
+</script>
+
+</body>
+</html>
