@@ -28,6 +28,7 @@
         }
         p {
             text-align: center;
+            color: #666;
         }
         table {
             width: 100%;
@@ -51,7 +52,8 @@
 <body>
 
 <div class="container">
-    <h1>Workout Progress vs. Goals</h1>
+    <h1>Workout Progress vs. Goals (Last 7 Days)</h1>
+    <p>Target rule: Complete exercises from each category at least <strong>2 days per week</strong>.</p>
     
     <table id="progressTable">
         <thead>
@@ -59,7 +61,7 @@
                 <th>Category</th>
                 <th>Exercise Completion</th>
                 <th>Progress</th>
-                <th>Adherence</th>
+                <th>Adherence (Goal: 2 days/wk)</th>
             </tr>
         </thead>
         <tbody>
@@ -69,7 +71,6 @@
 </div>
 
 <script>
-    // GitHub Raw URLs provided
     const goalsUrl = 'https://raw.githubusercontent.com/bcdatavis/fitness-tracker/refs/heads/main/data/workout.csv';
     const logUrl = 'https://raw.githubusercontent.com/bcdatavis/fitness-tracker/refs/heads/main/log/workout-log.csv';
 
@@ -104,23 +105,38 @@
             if (!categoryStats[cat]) {
                 categoryStats[cat] = {
                     displayName: row.category.trim(),
-                    uniqueExercises: new Set(),
-                    completedExercises: new Set(),
-                    totalSessionsLogged: 0,
-                    activeSessionsCount: 0
+                    uniqueExercises: new Set()
                 };
             }
             categoryStats[cat].uniqueExercises.add(ex);
         });
 
-        // 2. Track logged exercises and dates from workout-log.csv
-        const sessionCategoriesLogged = {}; // Track sessions per date and category
+        // Initialize tracking structures for the rolling 7-day window
+        // Using current time anchor (July 31, 2026) or fallback to system date
+        const today = new Date('2026-07-31T00:00:00');
+        const cutoffDate = new Date(today);
+        cutoffDate.setDate(today.getDate() - 7);
 
+        const completedExercisesPerCategory = {};
+        const categoryDaysHit = {};
+
+        Object.keys(categoryStats).forEach(cat => {
+            completedExercisesPerCategory[cat] = new Set();
+            categoryDaysHit[cat] = new Set(); // Stores unique dates this category was performed
+        });
+
+        // 2. Filter and process logs within the 7-day rolling window
         logs.forEach(row => {
             if (!row.Category || !row.Exercise || !row.Date) return;
+            
+            const cleanDateStr = row.Date.replace(/"/g, '').trim();
+            const logDate = new Date(cleanDateStr);
+
+            // Apply 7-day rolling window filter
+            if (isNaN(logDate) || logDate < cutoffDate || logDate > today) return;
+
             const cat = row.Category.trim().toLowerCase();
             const ex = row.Exercise.trim().toLowerCase();
-            const date = row.Date.replace(/"/g, '').trim();
 
             if (categoryStats[cat]) {
                 // Check if any set was actually performed (> 0)
@@ -133,36 +149,28 @@
                 });
 
                 if (performed) {
-                    categoryStats[cat].completedExercises.add(ex);
-                    
-                    // Track unique category occurrences per date for adherence calculation
-                    const sessionKey = `${date}-${cat}`;
-                    sessionCategoriesLogged[sessionKey] = true;
+                    completedExercisesPerCategory[cat].add(ex);
+                    categoryDaysHit[cat].add(cleanDateStr);
                 }
             }
         });
 
-        // Calculate adherence based on active dates logged out of estimated total session days
-        // (For demonstration, adherence evaluates frequency against total logged unique training days or baseline benchmarks)
-        const allUniqueDates = [...new Set(logs.map(r => r.Date ? r.Date.replace(/"/g, '').trim() : ''))].filter(Boolean);
-        const totalLoggedDays = allUniqueDates.length || 1;
-
+        // 3. Render the table
         const tbody = document.querySelector('#progressTable tbody');
         tbody.innerHTML = '';
 
         Object.keys(categoryStats).forEach(catKey => {
             const stats = categoryStats[catKey];
             const totalTarget = stats.uniqueExercises.size;
-            const completedCount = stats.completedExercises.size;
+            const completedCount = completedExercisesPerCategory[catKey].size;
 
-            // Compute Progress percentage (Completed unique exercises / Total target exercises for that category)
+            // Progress percentage (Unique exercises completed in last 7 days / Total target exercises)
             const progressPct = totalTarget > 0 ? Math.round((completedCount / totalTarget) * 100) : 0;
 
-            // Compute simulated Adherence based on how often categories are hit relative to total tracked training days
-            const categoryDaysHit = Object.keys(sessionCategoriesLogged).filter(k => k.endsWith(`-${catKey}`)).length;
-            const adherencePct = Math.min(100, Math.round((categoryDaysHit / totalLoggedDays) * 100));
+            // Adherence rule: Target is 2 days per week
+            const daysHitCount = categoryDaysHit[catKey].size;
+            const adherencePct = Math.min(100, Math.round((daysHitCount / 2) * 100));
 
-            // Capitalize category name for display
             const formattedCategoryName = stats.displayName.charAt(0).toUpperCase() + stats.displayName.slice(1);
 
             const tr = document.createElement('tr');
@@ -170,7 +178,7 @@
                 <td>${formattedCategoryName}</td>
                 <td>${completedCount} / ${totalTarget}</td>
                 <td>${progressPct}%</td>
-                <td>${adherencePct}%</td>
+                <td>${daysHitCount} / 2 days (${adherencePct}%)</td>
             `;
             tbody.appendChild(tr);
         });
