@@ -52,7 +52,8 @@
 <body>
 
 <div class="container">
-    <h1>Completed Workouts vs. Goals (Last 7 Days)</h1>
+    <h1>Workout Progress vs. Goals (Last 7 Days)</h1>
+    <p>2 days per week, per category (Alternates excluded).</p>
     
     <table id="progressTable">
         <thead>
@@ -60,7 +61,7 @@
                 <th>Category</th>
                 <th>Exercise Completion</th>
                 <th>Progress</th>
-                <th>Adherence (Goal: 2 days/wk)</th>
+                <th>Adherence</th>
             </tr>
         </thead>
         <tbody>
@@ -111,7 +112,6 @@
         });
 
         // Initialize tracking structures for the rolling 7-day window
-        // Using current time anchor (July 31, 2026) or fallback to system date
         const today = new Date('2026-07-31T00:00:00');
         const cutoffDate = new Date(today);
         cutoffDate.setDate(today.getDate() - 7);
@@ -121,7 +121,7 @@
 
         Object.keys(categoryStats).forEach(cat => {
             completedExercisesPerCategory[cat] = new Set();
-            categoryDaysHit[cat] = new Set(); // Stores unique dates this category was performed
+            categoryDaysHit[cat] = new Set();
         });
 
         // 2. Filter and process logs within the 7-day rolling window
@@ -131,14 +131,12 @@
             const cleanDateStr = row.Date.replace(/"/g, '').trim();
             const logDate = new Date(cleanDateStr);
 
-            // Apply 7-day rolling window filter
             if (isNaN(logDate) || logDate < cutoffDate || logDate > today) return;
 
             const cat = row.Category.trim().toLowerCase();
             const ex = row.Exercise.trim().toLowerCase();
 
             if (categoryStats[cat]) {
-                // Check if any set was actually performed (> 0)
                 let performed = false;
                 ['Set-1', 'Set-2', 'Set-3'].forEach(setKey => {
                     let val = row[setKey];
@@ -163,12 +161,19 @@
             const totalTarget = stats.uniqueExercises.size;
             const completedCount = completedExercisesPerCategory[catKey].size;
 
-            // Progress percentage (Unique exercises completed in last 7 days / Total target exercises)
             const progressPct = totalTarget > 0 ? Math.round((completedCount / totalTarget) * 100) : 0;
 
-            // Adherence rule: Target is 2 days per week
-            const daysHitCount = categoryDaysHit[catKey].size;
-            const adherencePct = Math.min(100, Math.round((daysHitCount / 2) * 100));
+            let adherenceDisplay = '';
+            
+            // Check if category is "alternate"
+            if (catKey === 'alternate') {
+                adherenceDisplay = `${completedCount} logged (N/A)`;
+            } else {
+                // Apply the 2-day per week rule for main categories
+                const daysHitCount = categoryDaysHit[catKey].size;
+                const adherencePct = Math.min(100, Math.round((daysHitCount / 2) * 100));
+                adherenceDisplay = `${daysHitCount} / 2 days (${adherencePct}%)`;
+            }
 
             const formattedCategoryName = stats.displayName.charAt(0).toUpperCase() + stats.displayName.slice(1);
 
@@ -177,7 +182,7 @@
                 <td>${formattedCategoryName}</td>
                 <td>${completedCount} / ${totalTarget}</td>
                 <td>${progressPct}%</td>
-                <td>${daysHitCount} / 2 days (${adherencePct}%)</td>
+                <td>${adherenceDisplay}</td>
             `;
             tbody.appendChild(tr);
         });
