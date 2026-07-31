@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker Progress Dashboard</title>
+    <!-- Include Chart.js for rendering graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include PapaParse for reliable CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Workout Progress vs. Goals</h1>
+    <p style="text-align: center;">Dynamically loaded from your GitHub repository.</p>
+    
+    <div class="chart-container">
+        <canvas id="progressChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // GitHub Raw URLs provided
+    const goalsUrl = 'https://raw.githubusercontent.com/bcdatavis/fitness-tracker/refs/heads/main/data/workout.csv';
+    const logUrl = 'https://raw.githubusercontent.com/bcdatavis/fitness-tracker/refs/heads/main/log/workout-log.csv';
+
+    async function loadData() {
+        try {
+            // Fetch both CSV files concurrently
+            const [goalsRes, logRes] = await Promise.all([
+                fetch(goalsUrl),
+                fetch(logUrl)
+            ]);
+
+            const goalsText = await goalsRes.text();
+            const logText = await logRes.text();
+
+            // Parse CSV data using PapaParse
+            const goalsData = Papa.parse(goalsText, { header: true }).data;
+            const logData = Papa.parse(logText, { header: true }).data;
+
+            processAndRender(goalsData, logData);
+        } catch (error) {
+            console.error('Error loading fitness data:', error);
+        }
+    }
+
+    function processAndRender(goals, logs) {
+        // Example metric: Count total sets completed per date in the workout log
+        // Group logs by Date
+        const dateCounts = {};
+
+        logs.forEach(row => {
+            if (!row.Date) return;
+            const date = row.Date.replace(/"/g, '').trim();
+            
+            // Count completed sets (Set-1, Set-2, Set-3 if they have numeric values > 0)
+            let setsCompleted = 0;
+            ['Set-1', 'Set-2', 'Set-3'].forEach(setKey => {
+                let val = row[setKey];
+                if (val !== undefined && val !== '' && !isNaN(val) && Number(val) > 0) {
+                    setsCompleted++;
+                }
+            });
+
+            if (!dateCounts[date]) {
+                dateCounts[date] = 0;
+            }
+            dateCounts[date] += setsCompleted;
+        });
+
+        const labels = Object.keys(dateCounts);
+        const dataValues = Object.values(dateCounts);
+
+        // Render Chart using Chart.js
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Sets Completed',
+                    data: dataValues,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Sets'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Workout Date'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize data loading on page load
+    loadData();
+</script>
+
+</body>
+</html>
