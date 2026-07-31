@@ -214,9 +214,10 @@ async function loadWeightLog(){
 
         weightHistory = [];
         parsedData.forEach(row => {
-            if(row.Weight && !isNaN(row.Weight)){
+            // Check if both Date and Weight exist and are valid
+            if(row.Date && row.Weight && !isNaN(row.Weight)){
                 weightHistory.push({
-                    date: row.Date ? row.Date.replace(/^"|"$/g, "").trim() : "Entry",
+                    date: row.Date.replace(/^"|"$/g, "").trim(),
                     weight: parseFloat(row.Weight)
                 });
             }
@@ -307,7 +308,7 @@ function renderChart(){
                 x: {
                     title: {
                         display: true,
-                        text: 'Date'
+                        text: 'Date Range'
                     }
                 }
             }
@@ -325,7 +326,7 @@ function saveWeightEntry(){
 
     const today = getToday();
     
-    // Check if today already exists in local history, update or push
+    // Check if today already exists in history, update or push
     const existingIndex = weightHistory.findIndex(item => item.date === today);
     if(existingIndex >= 0){
         weightHistory[existingIndex].weight = parseFloat(val);
