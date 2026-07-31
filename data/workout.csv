@@ -1,39 +1,39 @@
-category,exercise,weight,Set-1,Set-2,Set-3
-mobility,morning stretches,n/a,1,1,
-mobility,chin tuck,n/a,1,1,1
-mobility,calf massage,n/a,1,,
-mobility,foot stretch and massage,n/a,1,1,
-mobility,hip tilts,body,10,,
-mobility,supine hip flexor stretches,body,1,,
-mobility,supine single knee to chest,body,1,,
-mobility,supine double knee to chest,body,1,,
-mobility,kneeling foot stretch,body,1,,
-arms,scapular plane abduction,3,9,9,9
-arms,shoulder horizontal abduction,yellow band,8,8,8
-arms,wrist curls – flexors,5,9,9,9
-arms,hammer curls,5,9,9,9
-arms,isometrics – wrist extensors,3,1,1,1
-arms,lateral raise,5,8,8,8
-arms,Isometrics – bicep hold,5,1,1,1
-arms,Isometrics – farmer carry,5,1,1,1
-arms,Isometrics – tricep hold,red tube,1,1,1
-arms,step forward band,yellow band,6,6,0
-arms,seated low row,red tube,4,4,0
-alternate,kneeling foot stretch,1,0,0
-alternate,neuro mobility slump,1,1,0
-alternate,seated calf raise with dumbbell,8,8,8
-alternate,side lying hip abduction,4,4,0
-alternate,tricep extensions,5,5,0
-alternate,wrist rotation,8,8,0
-legs & core,calf raises (standing double leg),body,5,5,5
-legs & core,dead bug,body,6,6,6
-legs & core,bird dog,body,6,6,6
-legs & core,bridge,body,6,6,6
-legs & core,Isometrics - achilles,body,1,1,1
-legs & core,Isometrics - hamstring,body,1,1,1
-legs & core,step downs,body,2,2,2
-legs & core,lunges,body,3,3,3
-legs & core,kegels,n/a,3,3,3
-legs & core,RDL with Hip Hinge,body,3,3,3
-legs & core,Hamstring Curl with Ankle Weights,3lb,3,3,3
-bike day,bike ride,7,,,
+category,exercise,weight,Set-1,Set-2,Set-3,Weekly-Frequency
+mobility,morning stretches,n/a,1,1,,7
+mobility,chin tuck,n/a,1,1,1,6
+mobility,calf massage,n/a,1,,,3
+mobility,foot stretch and massage,n/a,1,1,,6
+mobility,hip tilts,body,10,,,4
+mobility,supine hip flexor stretches,body,1,,,4
+mobility,supine single knee to chest,body,1,,,4
+mobility,supine double knee to chest,body,1,,,4
+mobility,kneeling foot stretch,body,1,,,4
+arms,scapular plane abduction,3,9,9,9,2
+arms,shoulder horizontal abduction,yellow band,8,8,8,2
+arms,wrist curls – flexors,5,9,9,9,2
+arms,hammer curls,5,9,9,9,2
+arms,isometrics – wrist extensors,3,1,1,1,2
+arms,lateral raise,5,8,8,8,2
+arms,Isometrics – bicep hold,5,1,1,1,2
+arms,Isometrics – farmer carry,5,1,1,1,2
+arms,Isometrics – tricep hold,red tube,1,1,1,2
+arms,step forward band,yellow band,6,6,0,1
+arms,seated low row,red tube,4,4,0,1
+alternate,neuro mobility slump,1,1,0,0
+alternate,seated calf raise with dumbbell,8,8,8,0
+alternate,side lying hip abduction,4,4,0,0
+alternate,tricep extensions,5,5,0,0
+alternate,wrist rotation,8,8,0,0
+legs & core,calf raises (standing double leg),body,5,5,5,2
+legs & core,dead bug,body,6,6,6,2
+legs & core,bird dog,body,6,6,6,2
+legs & core,bridge,body,6,6,6,2
+legs & core,Isometrics - achilles,body,1,1,1,2
+legs & core,Isometrics - hamstring,body,1,1,1,2
+legs & core,step downs,body,2,2,2,2
+legs & core,lunges,body,3,3,3,2
+legs & core,kegels,n/a,3,3,3,2
+legs & core,kneeling foot stretch,1,0,0,2
+legs & core,RDL with Hip Hinge,body,3,3,3,0
+legs & core,Hamstring Curl with Ankle Weights,3lb,3,3,3,0
+bike day,bike ride,7,,,2
