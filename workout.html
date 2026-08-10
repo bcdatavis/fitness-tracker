@@ -72,6 +72,11 @@ input{
     flex:1;
 }
 
+.sets-completed {
+    color: green;
+    font-weight: bold;
+}
+
 .exercise-card{
 
     background:white;
@@ -1038,6 +1043,22 @@ function getDaysSinceWorkout(dateString){
     );
 
 }    
+
+/*
+====================================================
+SET COMPLETE STYLE
+====================================================
+*/
+    
+document.querySelectorAll('input[type="number"][id^="set"]').forEach(input => {
+    input.addEventListener('input', function () {
+        if (this.value !== '') {
+            this.classList.add('sets-completed');
+        } else {
+            this.classList.remove('sets-completed');
+        }
+    });
+});
     
 /*
 ====================================================
