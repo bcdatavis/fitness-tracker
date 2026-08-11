@@ -1,17 +1,17 @@
 user,date,exercise,steps,bike ride,protein,calories,fat,sugar,carbs
-Barnold,"Sunday, July 26, 2026",arms,13800,,1501,2018,63.0,,
-Barnold,"Monday, July 27, 2026",rest day,11500,,145,2100,68.0,,
-Barnold,"Tuesday, July 28, 2026",rest day,13800,,141,2253,77.8,,
+Barnold,"Sunday, July 26, 2026",arms,13800,,1501,2018,63,,
+Barnold,"Monday, July 27, 2026",rest day,11500,,145,2100,68,,
+Barnold,"Tuesday, July 28, 2026",rest day,13800,,141,2253,78,,
 Barnold,"Wednesday, July 29, 2026",arms,12500,,154,2174,83,,
-Barnold,"Thursday, July 30, 2026",bike,12200,7,147,2436,84,,250.0
-Barnold,"Friday, July 31, 2026",rest day,12000,,117,2378,76,,269.5
-Barnold,"Saturday, August 1, 2026",legs & core,11600,,145,2303,61.3,,324.5
-Barnold,"Sunday, August 2, 2026",bike,17000,7,145.3,2615,69,,324.5
-Barnold,"Monday, August 3, 2026",rest day,17000,,128,2320,73.4,,318.0
-Barnold,"Tuesday, August 4, 2026",bike & arms,13600,10,164,2428,71.0,,313.0
-Barnold,"Wednesday, August 5, 2026",rest day,9200,,131,2214,74.5,,270.0
-Barnold,"Thursday, August 6, 2026",legs & core,12500,,147,2480,67,,330.0
-Barnold,"Friday, August 7, 2026",bike,12000,7,130.9,2285,74,,255.0
-Barnold,"Saturday, August 8, 2026",arms,10700,,143.3,2430,66,,299.0
-Barnold,"Sunday, August 9, 2026",legs & core,15400,,138,2425,68,,335.5
-Barnold,"Monday, August 10, 2026",bike,16500,10,166.1,2813,94,,338.0
+Barnold,"Thursday, July 30, 2026",bike,12200,7,147,2436,84,,250
+Barnold,"Friday, July 31, 2026",rest day,12000,,117,2378,76,,270
+Barnold,"Saturday, August 1, 2026",legs & core,11600,,145,2303,61,,325
+Barnold,"Sunday, August 2, 2026",bike,17000,7,145,2615,69,,324.5
+Barnold,"Monday, August 3, 2026",rest day,17000,,128,2320,73.4,,318
+Barnold,"Tuesday, August 4, 2026",bike & arms,13600,10,164,2428,71.0,,313
+Barnold,"Wednesday, August 5, 2026",rest day,9200,,131,2214,74.5,,270
+Barnold,"Thursday, August 6, 2026",legs & core,12500,,147,2480,67,,330
+Barnold,"Friday, August 7, 2026",bike,12000,7,131,2285,74,,255
+Barnold,"Saturday, August 8, 2026",arms,10700,,143,2430,66,,299
+Barnold,"Sunday, August 9, 2026",legs & core,15400,,138,2425,68,,336
+Barnold,"Monday, August 10, 2026",bike,16500,10,166,2813,94,,338
