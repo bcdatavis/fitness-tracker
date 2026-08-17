@@ -243,7 +243,15 @@ function renderChart(){
         weightChartInstance.destroy();
     }
 
-    const labels = weightHistory.map(item => item.date);
+    const labels = weightHistory.map(item => {
+        const date = new Date(item.date);
+    
+        return new Intl.DateTimeFormat("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }).format(date);
+    });
     const dataPoints = weightHistory.map(item => item.weight);
 
     // Custom plugin to draw horizontal limit lines
