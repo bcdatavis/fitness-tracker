@@ -1,5 +1,5 @@
 user,date,exercise,steps,bike ride,protein,calories,fat,sugar,carbs
-Barnold,"Sunday, July 26, 2026",arms,13800,,1501,2018,63,,
+Barnold,"Sunday, July 26, 2026",arms,13800,,150,2018,63,,
 Barnold,"Monday, July 27, 2026",rest day,11500,,145,2100,68,,
 Barnold,"Tuesday, July 28, 2026",rest day,13800,,141,2253,78,,
 Barnold,"Wednesday, July 29, 2026",arms,12500,,154,2174,83,,
@@ -20,8 +20,7 @@ Barnold,"Wednesday, August 12, 2026",rest day,11600,,121,2205,64,85,280
 Barnold,"Thursday, August 13, 2026",bike & arms,14000,5,136,2473,72,95,333
 Barnold,"Friday, August 14, 2026",rest day,9700,,159,2389,72,111,341
 Barnold,"Saturday, August 15, 2026",bike,12300,7,152,2525,87,117,330
-        Barnold,"Sunday, August 16, 2026",legs & core & achilles,10300,,139,2524,68,110,338
-        Barnold,"Monday, August 17, 2026",bike,12800,3.2,151,2465,81,125,358
-        Barnold,"Tuesday, August 18, 2026",rest day,11400,,143,2406,88,108,283
-        Barnold,"Wednesday, August 19, 2026",legs & core,,,144,2424,72,102,333
-        
+Barnold,"Sunday, August 16, 2026",legs & core & achilles,10300,,139,2524,68,110,338
+Barnold,"Monday, August 17, 2026",bike,12800,3.2,151,2465,81,125,358
+Barnold,"Tuesday, August 18, 2026",rest day,11400,,143,2406,88,108,283
+Barnold,"Wednesday, August 19, 2026",legs & core,,,144,2424,72,102,333
