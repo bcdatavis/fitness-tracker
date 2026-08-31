@@ -8,7 +8,7 @@ mobility,supine hip flexor stretches,body,1,,,4
 mobility,supine single knee to chest,body,1,,,4
 mobility,supine double knee to chest,body,1,,,4
 mobility,kneeling foot stretch,body,1,,,4
-arms,scapular plane abduction,3,9,9,9,2
+arms,scapular plane abduction,3&5,9,9,9,2
 arms,shoulder horizontal abduction,yellow band,8,8,8,2
 arms,wrist curls - flexors,5,9,9,9,2
 arms,hammer curls,5,9,9,9,2
@@ -39,5 +39,5 @@ legs & core,lunges,body,3,3,3,2
 legs & core,kegels,n/a,3,3,3,2
 legs & core,kneeling foot stretch,body,1,0,0,2
 legs & core,rdl with hip hinge,body,3,3,3,0
-legs & core,hamstring curl with ankle weights,3lb,3,3,3,0
+legs & core,hamstring curl with ankle weights,3,3,3,3,0
 bike day,bike ride,body,7,,,2
