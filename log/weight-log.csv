@@ -1,5 +1,5 @@
-Date,Weight,Time
-"Thursday, July 30, 2026",149.6,
-"Friday, July 31, 2026",149.8,
-"Sunday, August 16, 2026",150.2,
-"Sunday, August 30, 2026",150.6,
+Date,Time,Weight
+"Thursday, July 30, 2026",,149.6
+"Friday, July 31, 2026",,149.8
+"Sunday, August 16, 2026",,150.2
+"Sunday, August 30, 2026",,150.6
