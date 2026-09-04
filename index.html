@@ -255,6 +255,57 @@ th{
     color:#b71c1c;
 
 }
+
+.note-selector{
+
+    position:absolute;
+    top:12px;
+    right:12px;
+    width:120px;
+
+}
+
+.note-button{
+
+    width:50px;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left:0;
+    padding-right:0;
+    font-size:14px;
+    background:#333;
+    color:white;
+
+}
+
+.note-menu{
+
+    display:none;
+    background:white;
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    margin-top:4px;
+
+}
+
+.note-menu label{
+
+    font-size:12px;
+    margin:0 0 4px 0;
+
+}
+
+.note-menu textarea{
+
+    width:100%;
+    padding:5px;
+    font-size:14px;
+    resize:vertical;
+    font-family:Arial, sans-serif;
+
+}
+
     
 </style>
 </head>
@@ -263,36 +314,61 @@ th{
 
 <div class="user-selector">
 
-<button 
-    class="user-button"
-    onclick="toggleUserMenu()">
-    User ▾
-</button>
+    <button 
+        class="user-button"
+        onclick="toggleUserMenu()">
+        User ▾
+    </button>
 
-<div 
-    id="userMenu"
-    class="user-menu">
+    <div 
+        id="userMenu"
+        class="user-menu">
 
-<label for="userSelect">
-Select User
-</label>
+        <label for="userSelect">
+            Select User
+        </label>
 
-<select id="userSelect">
+        <select id="userSelect">
 
-<option value="Barnold">
-Barnold
-</option>
+            <option value="Barnold">
+                Barnold
+            </option>
 
-<option value="Sigourney">
-Sigourney
-</option>
+            <option value="Sigourney">
+                Sigourney
+            </option>
 
-</select>
+        </select>
+
+    </div>
 
 </div>
 
-</div>
 
+<div class="note-selector">
+
+    <button
+        class="note-button"
+        onclick="toggleNoteMenu()">
+        Note ▾
+    </button>
+
+    <div
+        id="noteMenu"
+        class="note-menu">
+
+        <label for="noteText">
+            Today's Note
+        </label>
+
+        <textarea
+            id="noteText"
+            placeholder="Enter a note..."
+            rows="4"></textarea>
+
+    </div>
+
+</div>
 
 <h1>Fitness Tracker</h1>
 
@@ -587,6 +663,26 @@ function toggleUserMenu(){
     }
 
 }    
+
+
+function toggleNoteMenu(){
+
+    const menu =
+        document.getElementById("noteMenu");
+
+    if(menu.style.display === "block"){
+
+        menu.style.display = "none";
+
+    }
+    else{
+
+        menu.style.display = "block";
+
+    }
+
+}
+
     
 /*
 ====================================================
@@ -1069,6 +1165,9 @@ function saveLocalState(){
         bikeRide:
             document.getElementById("bikeRide").value,
 
+        note:
+            document.getElementById("noteText").value,
+
         customProtein:
             document.getElementById("customProtein").value,
 
@@ -1123,6 +1222,9 @@ function loadLocalState(){
     document.getElementById("bikeRide").value =
         state.bikeRide || "";
 
+    document.getElementById("noteText").value =
+        state.note || "";
+    
     document.getElementById("customProtein").value =
         state.customProtein || "";
 
@@ -1193,7 +1295,8 @@ function clearDailyValues(){
     // Reset text boxes
     document.getElementById("steps").value = "";
     document.getElementById("bikeRide").value = "";
-
+    document.getElementById("noteText").value = "";
+    document.getElementById("noteMenu").style.display = "none";
     document.getElementById("customProtein").value = "";
     document.getElementById("customCalories").value = "";
     document.getElementById("customFat").value = "";
@@ -1252,7 +1355,15 @@ function resetDay(){
     clearDailyValues();
 
 }
-    
+
+
+function escapeCSV(value){
+
+    return `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+}
+
+
 /*
 ====================================================
 SAVE TO GITHUB
@@ -1302,8 +1413,12 @@ async function saveDay(){
             day: "numeric"
         }).format(new Date());
 
+        const note =
+            document.getElementById("noteText").value.trim();
+        
         const line =
-        `${document.getElementById("userSelect").value},"${today}",${document.getElementById("exercise").value},${document.getElementById("steps").value},${document.getElementById("bikeRide").value},${Math.round(totals.protein)},${Math.round(totals.calories)},${Math.round(totals.fat)},${Math.round(totals.sugar)},${Math.round(totals.carbs)}\n`;
+            `${document.getElementById("userSelect").value},${escapeCSV(today)},${escapeCSV(document.getElementById("exercise").value)},${document.getElementById("steps").value},${document.getElementById("bikeRide").value},${Math.round(totals.protein)},${Math.round(totals.calories)},${Math.round(totals.fat)},${Math.round(totals.sugar)},${Math.round(totals.carbs)},${escapeCSV(note)}\n`;
+
 
         /*
         GET EXISTING FILE
