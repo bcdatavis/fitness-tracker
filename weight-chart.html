@@ -218,6 +218,9 @@ async function loadWeightLog(){
             if(row.Date && row.Weight && !isNaN(row.Weight)){
                 weightHistory.push({
                     date: row.Date.replace(/^"|"$/g, "").trim(),
+                    time: row.Time
+                        ? row.Time.replace(/^"|"$/g, "").trim()
+                        : "",
                     weight: parseFloat(row.Weight)
                 });
             }
@@ -421,10 +424,12 @@ async function saveWeightLog(){
         const existingFile = await getResponse.json();
 
         // Build complete CSV content from weightHistory array
-        let csvContent = "Date,Weight\n";
+        let csvContent = "Date,Time,Weight\n";
+
         weightHistory.forEach(item => {
-            csvContent += `"${item.date}",${item.weight}\n`;
+            csvContent += `"${item.date}","${item.time || ""}",${item.weight}\n`;
         });
+
 
         const encodedContent = btoa(
             unescape(
