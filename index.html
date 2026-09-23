@@ -116,14 +116,59 @@ button{
     width:220px;
 }
 
+.custom-meal-header{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    margin-top:10px;
+    margin-bottom:5px;
+}
+
 .custom-meal-label{
     display:block;
     text-align:center;
     font-weight:bold;
-    margin-top:10px;
-    margin-bottom:5px;
+    margin:0;
 }
-    
+
+.custom-food-selector{
+    position:relative;
+}
+
+.custom-food-button{
+    padding:5px 10px;
+    font-size:14px;
+    background:#333;
+    color:white;
+}
+
+.custom-food-menu{
+    display:none;
+    position:absolute;
+    top:100%;
+    right:0;
+    z-index:100;
+    width:230px;
+    background:white;
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    margin-top:4px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+}
+
+.custom-food-menu label{
+    font-size:12px;
+    margin:0 0 4px 0;
+}
+
+.custom-food-menu input{
+    width:100%;
+    padding:5px;
+    font-size:14px;
+}
+
 .full-btn{
     flex:1;
     background:#4CAF50;
@@ -442,7 +487,41 @@ th{
 </div>
 
     
-<label class="custom-meal-label">Custom Meal</label>
+<div class="custom-meal-header">
+
+    <label class="custom-meal-label">
+        Custom Meal
+    </label>
+
+    <div class="custom-food-selector">
+
+        <button
+            type="button"
+            class="custom-food-button"
+            onclick="toggleCustomFoodMenu()">
+            Food ▾
+        </button>
+
+        <div
+            id="customFoodMenu"
+            class="custom-food-menu">
+
+            <label for="customFoodName">
+                Custom Food Name
+            </label>
+
+            <input
+                type="text"
+                id="customFoodName"
+                placeholder="Enter food name"
+                autocomplete="off">
+
+        </div>
+
+    </div>
+
+</div>
+
 
 <div class="form-row custom-meal-row">
 
@@ -622,6 +701,8 @@ const GITHUB_OWNER = "bcdatavis";
 const GITHUB_REPO = "fitness-tracker";
 const GITHUB_BRANCH = "main";
 const LOG_FILE = "log/fitness-log.csv";
+const FOOD_FILE = "data/food.csv";
+
 
 /*
 ====================================================
@@ -678,6 +759,33 @@ function toggleNoteMenu(){
     else{
 
         menu.style.display = "block";
+
+    }
+
+}
+
+
+function toggleCustomFoodMenu(){
+
+    const menu =
+        document.getElementById("customFoodMenu");
+
+    if(menu.style.display === "block"){
+
+        menu.style.display = "none";
+
+    }
+    else{
+
+        menu.style.display = "block";
+
+        setTimeout(() => {
+
+            document
+                .getElementById("customFoodName")
+                .focus();
+
+        }, 50);
 
     }
 
@@ -1079,68 +1187,449 @@ function addFood(servingMultiplier){
 
 }
 
+async function appendCustomFoodToGitHub(food, token){
+
+    const response =
+        await fetch(
+            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FOOD_FILE}`,
+            {
+                headers:{
+                    Authorization:`Bearer ${token}`,
+                    Accept:"application/vnd.github+json"
+                }
+            }
+        );
+
+    if(!response.ok){
+
+        const error =
+            await response.json().catch(
+                () => ({})
+            );
+
+        throw new Error(
+            error.message ||
+            "Unable to read food.csv from GitHub."
+        );
+
+    }
+
+    const existingFile =
+        await response.json();
+
+    const currentContent =
+        decodeBase64UTF8(
+            existingFile.content.replace(/\n/g,"")
+        );
+
+    const line =
+        [
+            escapeCSV(food.name),
+            food.protein,
+            food.calories,
+            food.fat,
+            food.sugar,
+            food.carbs
+        ].join(",") + "\n";
+
+    let updatedContent =
+        currentContent;
+
+    if(
+        updatedContent.length > 0 &&
+        !updatedContent.endsWith("\n")
+    ){
+
+        updatedContent += "\n";
+
+    }
+
+    updatedContent += line;
+
+    const encodedContent =
+        encodeBase64UTF8(
+            updatedContent
+        );
+
+    const putResponse =
+        await fetch(
+            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FOOD_FILE}`,
+            {
+                method:"PUT",
+
+                headers:{
+                    Authorization:`Bearer ${token}`,
+                    Accept:"application/vnd.github+json",
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    message:
+                        `Add custom food: ${food.name}`,
+
+                    content:
+                        encodedContent,
+
+                    sha:
+                        existingFile.sha,
+
+                    branch:
+                        GITHUB_BRANCH
+
+                })
+
+            }
+        );
+
+    if(!putResponse.ok){
+
+        const error =
+            await putResponse.json().catch(
+                () => ({})
+            );
+
+        console.error(error);
+
+        throw new Error(
+            error.message ||
+            "GitHub could not update food.csv."
+        );
+
+    }
+
+}
+
+    
 /*
 ====================================================
 ADD CUSTOM MEAL
 ====================================================
 */
 
-function addCustomMeal(){
+function encodeBase64UTF8(value){
 
-    const protein =
-        Number(document.getElementById("customProtein").value) || 0;
+    const bytes =
+        new TextEncoder().encode(value);
 
-    const calories =
-        Number(document.getElementById("customCalories").value) || 0;
+    let binary = "";
 
-    const fat =
-        Number(document.getElementById("customFat").value) || 0;
+    const chunkSize = 0x8000;
 
-    const sugar =
-        Number(document.getElementById("customSugar").value) || 0;
+    for(
+        let i = 0;
+        i < bytes.length;
+        i += chunkSize
+    ){
 
-    const carbs =
-        Number(document.getElementById("customCarbs").value) || 0;
+        binary += String.fromCharCode(
+            ...bytes.subarray(
+                i,
+                Math.min(
+                    i + chunkSize,
+                    bytes.length
+                )
+            )
+        );
 
-    if(protein === 0 && calories === 0 && fat === 0 && sugar === 0 && carbs === 0){
-        alert("Enter at least one value.");
-        return;
     }
 
-    totals.protein += protein;
-    totals.calories += calories;
-    totals.fat += fat;
-    totals.sugar += sugar;
-    totals.carbs += carbs;
+    return btoa(binary);
 
-    eatenToday.push({
-
-    name:"Custom Meal",
-
-    serving:"Full Serving",
-
-    protein:protein,
-
-    calories:calories,
-
-    fat:fat,
-
-    sugar:sugar,
-
-    carbs:carbs
-
-});
-    
-    updateFoodList();
-    updateTotalsDisplay();
-    saveLocalState();
-
-    document.getElementById("customProtein").value = "";
-    document.getElementById("customCalories").value = "";
-    document.getElementById("customFat").value = "";
-    document.getElementById("customSugar").value = "";
-    document.getElementById("customCarbs").value = "";
 }
+
+
+function decodeBase64UTF8(value){
+
+    const binary =
+        atob(value);
+
+    const bytes =
+        Uint8Array.from(
+            binary,
+            character => character.charCodeAt(0)
+        );
+
+    return new TextDecoder().decode(bytes);
+
+}
+
+    
+
+async function addCustomMeal(){
+
+    const foodName =
+        document
+            .getElementById("customFoodName")
+            .value
+            .trim();
+
+    const protein =
+        Number(
+            document.getElementById("customProtein").value
+        ) || 0;
+
+    const calories =
+        Number(
+            document.getElementById("customCalories").value
+        ) || 0;
+
+    const fat =
+        Number(
+            document.getElementById("customFat").value
+        ) || 0;
+
+    const sugar =
+        Number(
+            document.getElementById("customSugar").value
+        ) || 0;
+
+    const carbs =
+        Number(
+            document.getElementById("customCarbs").value
+        ) || 0;
+
+
+    /*
+    CHECK FOOD NAME
+    */
+
+    if(!foodName){
+
+        alert(
+            "Enter a name for the custom food."
+        );
+
+        return;
+
+    }
+
+
+    /*
+    CHECK NUTRITION
+    */
+
+    if(
+        protein === 0 &&
+        calories === 0 &&
+        fat === 0 &&
+        sugar === 0 &&
+        carbs === 0
+    ){
+
+        alert(
+            "Enter at least one nutritional value."
+        );
+
+        return;
+
+    }
+
+
+    /*
+    GET GITHUB TOKEN
+    */
+
+    const token =
+        document
+            .getElementById("githubToken")
+            .value
+            .trim();
+
+
+    if(!token){
+
+        alert(
+            "Enter a GitHub PAT before adding a custom food."
+        );
+
+        return;
+
+    }
+
+
+    /*
+    CREATE FOOD OBJECT
+    */
+
+    const customFood = {
+
+        name:foodName,
+
+        protein:protein,
+
+        calories:calories,
+
+        fat:fat,
+
+        sugar:sugar,
+
+        carbs:carbs
+
+    };
+
+
+    /*
+    SAVE FOOD TO GITHUB FIRST
+    */
+
+    const button =
+        document.querySelector(
+            ".custom-btn"
+        );
+
+    const originalText =
+        button.textContent;
+
+    button.disabled = true;
+    button.textContent = "Saving Food...";
+
+
+    try{
+
+        await appendCustomFoodToGitHub(
+            customFood,
+            token
+        );
+
+
+        /*
+        ADD FOOD TO LOCAL FOOD ARRAY
+        */
+
+        foods.push(customFood);
+
+
+        /*
+        ADD FOOD TO NORMAL FOOD DROPDOWN
+        */
+
+        const foodSelect =
+            document.getElementById(
+                "foodSelect"
+            );
+
+        const option =
+            document.createElement("option");
+
+        option.value =
+            customFood.name;
+
+        option.textContent =
+            customFood.name;
+
+        foodSelect.appendChild(option);
+
+
+        /*
+        ADD NUTRITION TO TODAY'S TOTALS
+        */
+
+        totals.protein += protein;
+
+        totals.calories += calories;
+
+        totals.fat += fat;
+
+        totals.sugar += sugar;
+
+        totals.carbs += carbs;
+
+
+        /*
+        ADD TO FOODS EATEN TODAY
+        */
+
+        eatenToday.push({
+
+            name:foodName,
+
+            serving:"Full Serving",
+
+            protein:protein,
+
+            calories:calories,
+
+            fat:fat,
+
+            sugar:sugar,
+
+            carbs:carbs
+
+        });
+
+
+        updateFoodList();
+
+        updateTotalsDisplay();
+
+        saveLocalState();
+
+
+        /*
+        CLEAR FORM
+        */
+
+        document.getElementById(
+            "customFoodName"
+        ).value = "";
+
+        document.getElementById(
+            "customProtein"
+        ).value = "";
+
+        document.getElementById(
+            "customCalories"
+        ).value = "";
+
+        document.getElementById(
+            "customFat"
+        ).value = "";
+
+        document.getElementById(
+            "customSugar"
+        ).value = "";
+
+        document.getElementById(
+            "customCarbs"
+        ).value = "";
+
+
+        /*
+        CLOSE FOOD MENU
+        */
+
+        document.getElementById(
+            "customFoodMenu"
+        ).style.display = "none";
+
+
+        alert(
+            "Custom food added successfully."
+        );
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        alert(
+            "Error adding custom food:\n\n" +
+            error.message
+        );
+
+    }
+    finally{
+
+        button.disabled = false;
+
+        button.textContent =
+            originalText;
+
+    }
+
+}
+
     
     
 /*
@@ -1168,6 +1657,9 @@ function saveLocalState(){
         note:
             document.getElementById("noteText").value,
 
+        customFoodName:
+            document.getElementById("customFoodName").value,
+        
         customProtein:
             document.getElementById("customProtein").value,
 
@@ -1224,6 +1716,9 @@ function loadLocalState(){
 
     document.getElementById("noteText").value =
         state.note || "";
+
+    document.getElementById("customFoodName").value =
+        state.customFoodName || "";
     
     document.getElementById("customProtein").value =
         state.customProtein || "";
@@ -1297,6 +1792,8 @@ function clearDailyValues(){
     document.getElementById("bikeRide").value = "";
     document.getElementById("noteText").value = "";
     document.getElementById("noteMenu").style.display = "none";
+    document.getElementById("customFoodName").value = "";
+    document.getElementById("customFoodMenu").style.display = "none";
     document.getElementById("customProtein").value = "";
     document.getElementById("customCalories").value = "";
     document.getElementById("customFat").value = "";
