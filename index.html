@@ -132,6 +132,25 @@ button{
     margin:0;
 }
 
+.water-buttons{
+    display:flex;
+    gap:4px;
+}
+
+.water-btn{
+    background:none;
+    border:none;
+    padding:0 2px;
+    font-size:20px;
+    color:#bbb;
+    cursor:pointer;
+}
+
+.water-btn.drunk{
+    color:#2196F3;
+}
+
+    
 .custom-food-selector{
     position:relative;
 }
@@ -489,6 +508,11 @@ th{
     
 <div class="custom-meal-header">
 
+    <div class="water-buttons">
+        <button class="water-btn" onclick="toggleWater(0)">🥛</button>
+        <button class="water-btn" onclick="toggleWater(1)">🥛</button>
+    </div>
+
     <label class="custom-meal-label">
         Custom Meal
     </label>
@@ -520,10 +544,16 @@ th{
 
     </div>
 
+    <div class="water-buttons">
+        <button class="water-btn" onclick="toggleWater(2)">🥛</button>
+        <button class="water-btn" onclick="toggleWater(3)">🥛</button>
+    </div>
+
 </div>
 
 
 <div class="form-row custom-meal-row">
+
 
     <div>
         <label for="customProtein">Protein</label>
@@ -1620,6 +1650,16 @@ async function addCustomMeal(){
 
 }
 
+
+function toggleWater(index){
+
+    const buttons =
+        document.querySelectorAll(".water-btn");
+
+    buttons[index].classList.toggle("drunk");
+
+}
+
     
     
 /*
@@ -1789,6 +1829,10 @@ function clearDailyValues(){
     document.getElementById("customFat").value = "";
     document.getElementById("customSugar").value = "";
     document.getElementById("customCarbs").value = "";
+
+    document.querySelectorAll(".water-btn").forEach(button => {
+        button.classList.remove("drunk");
+    });
 
     // Reset totals
     totals = {
