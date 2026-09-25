@@ -509,8 +509,8 @@ th{
 <div class="custom-meal-header">
 
     <div class="water-buttons">
-        <button class="water-btn" onclick="toggleWater(0)">🥛</button>
-        <button class="water-btn" onclick="toggleWater(1)">🥛</button>
+        <button class="water-btn" onclick="toggleWater(this)">🥛</button>
+        <button class="water-btn" onclick="toggleWater(this)">🥛</button>
     </div>
 
     <label class="custom-meal-label">
@@ -545,8 +545,8 @@ th{
     </div>
 
     <div class="water-buttons">
-        <button class="water-btn" onclick="toggleWater(2)">🥛</button>
-        <button class="water-btn" onclick="toggleWater(3)">🥛</button>
+        <button class="water-btn" onclick="toggleWater(this)">🥛</button>
+        <button class="water-btn" onclick="toggleWater(this)">🥛</button>
     </div>
 
 </div>
@@ -1651,14 +1651,21 @@ async function addCustomMeal(){
 }
 
 
-function toggleWater(index){
+function toggleWater(button){
 
-    const buttons =
-        document.querySelectorAll(".water-btn");
+    if(button.textContent === "🥛"){
 
-    buttons[index].classList.toggle("drunk");
+        button.textContent = "✓";
+
+    }
+    else{
+
+        button.textContent = "🥛";
+
+    }
 
 }
+
 
     
     
@@ -1831,8 +1838,9 @@ function clearDailyValues(){
     document.getElementById("customCarbs").value = "";
 
     document.querySelectorAll(".water-btn").forEach(button => {
-        button.classList.remove("drunk");
+        button.textContent = "🥛";
     });
+
 
     // Reset totals
     totals = {
