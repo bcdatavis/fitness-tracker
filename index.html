@@ -140,8 +140,8 @@ button{
 .water-btn{
     background:none;
     border:none;
-    padding:0 2px;
-    font-size:20px;
+    padding:0 3px;
+    font-size:28px;
     color:#bbb;
     cursor:pointer;
 }
@@ -509,8 +509,8 @@ th{
 <div class="custom-meal-header">
 
     <div class="water-buttons">
-        <button class="water-btn" onclick="toggleWater(this)">🥛</button>
-        <button class="water-btn" onclick="toggleWater(this)">🥛</button>
+        <button class="water-btn" onclick="toggleWater(this)">🥤</button>
+        <button class="water-btn" onclick="toggleWater(this)">🥤</button>
     </div>
 
     <label class="custom-meal-label">
@@ -545,8 +545,8 @@ th{
     </div>
 
     <div class="water-buttons">
-        <button class="water-btn" onclick="toggleWater(this)">🥛</button>
-        <button class="water-btn" onclick="toggleWater(this)">🥛</button>
+        <button class="water-btn" onclick="toggleWater(this)">🥤</button>
+        <button class="water-btn" onclick="toggleWater(this)">🥤</button>
     </div>
 
 </div>
@@ -1838,7 +1838,7 @@ function clearDailyValues(){
     document.getElementById("customCarbs").value = "";
 
     document.querySelectorAll(".water-btn").forEach(button => {
-        button.textContent = "🥛";
+        button.textContent = "🥤";
     });
 
 
