@@ -1224,7 +1224,7 @@ async function appendCustomFoodToGitHub(food, token){
 
     const line =
         [
-            escapeCSV(food.name),
+            food.name,
             food.protein,
             food.calories,
             food.fat,
@@ -1390,20 +1390,6 @@ async function addCustomMeal(){
         ) || 0;
 
 
-    /*
-    CHECK FOOD NAME
-    */
-
-    if(!foodName){
-
-        alert(
-            "Enter a name for the custom food."
-        );
-
-        return;
-
-    }
-
 
     /*
     CHECK NUTRITION
@@ -1425,27 +1411,26 @@ async function addCustomMeal(){
 
     }
 
-
     /*
-    GET GITHUB TOKEN
+    GET GITHUB TOKEN ONLY IF FOOD HAS A NAME
     */
-
+    
     const token =
         document
             .getElementById("githubToken")
             .value
             .trim();
-
-
-    if(!token){
-
+    
+    if(foodName && !token){
+    
         alert(
-            "Enter a GitHub PAT before adding a custom food."
+            "Enter a GitHub PAT before adding a named custom food."
         );
-
+    
         return;
-
+    
     }
+
 
 
     /*
@@ -1487,10 +1472,15 @@ async function addCustomMeal(){
 
     try{
 
-        await appendCustomFoodToGitHub(
-            customFood,
-            token
-        );
+        if(foodName){
+    
+            await appendCustomFoodToGitHub(
+                customFood,
+                token
+            );
+    
+        }
+
 
 
         /*
