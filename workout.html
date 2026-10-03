@@ -1156,6 +1156,11 @@ function startRestTimer(){
 
 function resetForm(){
 
+    // Ask for confirmation before resetting
+    if(!confirm("Are you sure you want to reset the workout?")){
+        return;
+    }
+    
     // Stop rest timer if running
     if(restCountdown){
 
