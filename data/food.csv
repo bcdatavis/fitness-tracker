@@ -12,16 +12,19 @@ bread - rye sourdough (1x),5,125,1,0,24
 bread - whole grain (1x),4,80,1,2,35
 broccoli (1 cup),4,54,0.6,2.2,6
 bun - brioche (1x),5,150,3.5,4,26
+bun - thriftys brioche,6,180,5,7,27
 bun - whole wheat hamburger (1x),6,160,2,2,20
 canola oil (2 tsp),0,80,9,0,0
 cashews (1/3 cup),7,250,19,2,12
 cashews LD roasted (1/4 cup),6,150,14,2,8
+cauliflower,2,25,0.3,2,5
 chai latte (12 oz),1.5,220,7.6,29,45
 cheese - cottage (2% - 1/2 cup),16,110,2.5,4,5
 cheese - shredded cheddar (1/4 cup),7,120,9,0,1
 cheese - shredded parmesan (1/4 cup),8,120,9,0,1
 chick'n strips - gusta (1/4 pack),13,100,3.5,0,4
 chick'n supreme (gardein),16,190,8,1,14
+chips - abuelos no salt (14),2,142,7.4,1,16
 cookie (1x celebration butter),1,75,3,6,21
 cookie (1x celebration caramel truffle),0.5,75,4,8,22
 cookie (1x milk chocolate),1,75,3,6,11
@@ -48,12 +51,14 @@ muffin (1x),6,400,15,30,55
 oatmeal (1x),4,120,1.5,9,26
 oat milk - unsweetened (1 cup),3,120,5,7,17
 olive oil (2 tsp),0,80,9,0,0
+pasta - Castelli o Canada (1/4),11,300,1.5,0,61
 pierogi (7x),11,380,5,2,48
 pizza slice (1x),10,250,9,2,31
 pizza thrifty kitchen veggie (1/4 pizza),22,440,14,7,57
 popsicle - L'il lolly (1x),0,35,0,7,9
 potato (1x),4.5,164,0.2,2,37
 potato patties (2x),2,170,9,1,21
+potato patties - Cavendish (3x),2,180,10,0,23
 peanut butter - Adams Creamy  (1 tbsp),4,90,7,1,3
 peanut butter - Kraft Creamy  (1 tbsp),4,90,7,1,3
 peanut butter - powdered (2 tbsp),5,50,1.5,1,5
@@ -61,6 +66,7 @@ pretzels (1 cup),5,190,0.5,1,41
 protein bar (1x),13,150,4.5,2,16
 protein powder - Progressive Harmonized Fermented Vegan (1x),22,120,1.5,0,3
 protein powder - Progressive Sport Real Food Gainer (1x),29,480,2,5,89
+salsa,1,15,0,2,3
 samosa - small (3x),4,200,6,1,18
 sausage (1x soy),21,190,9,1,7
 scone (blueberry),5,420,18,20,45
@@ -69,21 +75,15 @@ spaghetti,8,221,1.5,1,43
 sweet potato (1x),2,112,0,6,24
 tart cherry juice (1 cup),2,130,0,21,34
 tempeh (half package),15,166,4,0,9
+tofu - epik eats - smoked meat (1/4),7,100,7,1,2
 tofu - firm (1/4 package),13,120,7,1,3
-tofu - sunrise sriracha smoked (1/2 package),15,140,8,2,4
-tofu - ultra firm (1/5 package),16,150,9,1,2
 tofu - oome (1/3 package),14,130,7,3,4
+tofu - sunrise sriracha smoked (1/2 package),15,140,8,2,4
+tofu - turkey slices - Gusta (3x),9,70,2,0,3
+tofu - ultra firm (1/5 package),16,150,9,1,2
 tortilla - white (1x),3,100,2.5,1,17
 vector (1 cup),10,170,1.5,12,30
 water (700ml),0,0,0,0,0
 yogourt - 0% fat greek-13 (3/4 cup),13,80,1,3,5
 yogourt - 0% fat greek-17 (3/4 cup),17,100,0,6,8
 yogourt - 0% fat greek-17-vegan (3/4 cup),17,100,0,6,8
-salsa,1,15,0,2,3
-chips - abuelos no salt (14),2,142,7.4,1,16
-bun - thriftys brioche,6,180,5,7,27
-tofu turkey slices - Gusta (3x),9,70,2,0,3
-pasta - Castelli o Canada (1/4),11,300,1.5,0,61
-potato patties - Cavendish (3),2,180,10,0,23
-tofu - Epik eats - smoked meat (1/4),7,100,7,1,2
-cauliflower,2,25,0.3,2,5
