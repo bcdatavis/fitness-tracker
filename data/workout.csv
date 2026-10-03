@@ -5,20 +5,22 @@ alternate,side lying hip abduction,body,4,4,0,0
 alternate,standing hip abduction,body,5,0,0,0
 alternate,step forward band,yellow band,6,6,0,1
 alternate,wrist rotation,dowel,8,8,0,0
-arms,dumbbell external rotation warm-up,2&3,5,5,5,2
-arms,hammer curls,5,9,9,9,2
-arms,isometrics - bicep hold,5,1,1,1,2
+arms,dumbbell external rotation warm-up,2,8,8,8,2
+arms,hammer curls,5&8,9,9,9,2
+arms,isometrics - bicep hold,5&8,1,1,1,2
 arms,isometrics - farmer carry,8,1,1,1,2
+arms,isometrics - suitcase carry,8,1,1,1,2
 arms,isometrics - tricep hold,red tube,1,1,1,2
 arms,isometrics - wrist extensors,3,1,1,1,2
 arms,lateral raise,5,8,8,8,2
 arms,scapular plane abduction,3&5,9,9,9,2
-arms,seated low row,red tube,4,4,0,1
+arms,seated low row,red tube,10,10,10,1
 arms,seated resistance band chest press,reb tube,8,8,8,2
 arms,shoulder horizontal abduction,yellow band,8,8,8,2
-arms,tricep pulldowns,3,4,4,4,1
+arms,tricep pulldowns,red tube,8,8,8,1
 arms,wrist curls - flexors,5,9,9,9,2
 bike day,bike ride,body,7,,,2
+legs & core,around the worlds - 5 each way,5,5,5,0,2
 legs & core,bird dog,body,9,9,9,2
 legs & core,calf raises (standing double leg),body,10,10,10,3
 legs & core,dead bug,body,9,9,9,2
@@ -38,6 +40,7 @@ legs & core,isometrics - supine quad sets 30-50% (5 sec),body,10,10,10,3
 legs & core,kegels,n/a,3,3,3,2
 legs & core,lateral step downs,body,2,2,2,2
 legs & core,lunges,body,3,3,3,2
+legs & core,offset walks - 10 paces,3&5,1,1,1,2
 legs & core,paloff press,red tube,4,4,4,2
 legs & core,rdl with hip hinge,body,3,3,3,0
 legs & core,terminal knee extension,yellow band,8,0,0,1
