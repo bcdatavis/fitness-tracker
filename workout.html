@@ -364,7 +364,7 @@ Goal Reps/Sets
         id="restButton"
         class="rest-btn"
         onclick="startRestTimer()">
-        Start 1:30 Rest Interval
+        Start 2:00 Rest Interval
     </button>
 
 </div>
@@ -1095,7 +1095,7 @@ function startRestTimer(){
         return;
     }
 
-    let seconds = 90;
+    let seconds = 120;
 
     const button =
         document.getElementById("restButton");
@@ -1131,7 +1131,7 @@ function startRestTimer(){
             setTimeout(function(){
 
                 button.textContent =
-                    "Start 1:30 Rest Interval";
+                    "Start 2:00 Rest Interval";
 
             },3000);
 
@@ -1174,7 +1174,7 @@ function resetForm(){
 
     restButton.disabled = false;
     restButton.textContent =
-        "Start 1:30 Rest Interval";
+        "Start 2:00 Rest Interval";
 
     // Reset dropdowns
     document.getElementById("category").selectedIndex = 0;
