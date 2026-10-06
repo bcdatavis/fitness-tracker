@@ -12,6 +12,7 @@ bread - rye sourdough (1x),5,125,1,0,24
 bread - whole grain (1x),4,80,1,2,35
 broccoli (1 cup),4,54,0.6,2.2,6
 bun - brioche (1x),5,150,3.5,4,26
+bun - brioche - portofino,9,250,6,6,40
 bun - thriftys brioche,6,180,5,7,27
 bun - whole wheat hamburger (1x),6,160,2,2,20
 canola oil (2 tsp),0,80,9,0,0
@@ -19,6 +20,7 @@ cashews (1/3 cup),7,250,19,2,12
 cashews LD roasted (1/4 cup),6,150,14,2,8
 cauliflower,2,25,0.3,2,5
 chai latte (12 oz),1.5,220,7.6,29,45
+cheese - cottage (1% - 1/2 cup),15,90,1,4,5
 cheese - cottage (2% - 1/2 cup),16,110,2.5,4,5
 cheese - shredded cheddar (1/4 cup),7,120,9,0,1
 cheese - shredded parmesan (1/4 cup),8,120,9,0,1
@@ -42,6 +44,7 @@ ice cream - halo top - mint (3/4 cup),7,130,4.5,10,24
 jam (Strawberry),0.1,50,0,13,13
 ketchup or HP (1 tbsp),0,20,0,4,5
 kiwi (1x),0.8,40,0.5,7,10
+kombucha - ginger (1 cup),0,38,0,4,4
 lentils (1 cup),17,230,.8,2,40
 london fog (12 oz),4,220,5.5,32,42
 margarine (2 tsp),0,70,8,0,0
@@ -49,8 +52,11 @@ matcha latte (12 oz),4,200,9,14,42
 mixed veggies (3/4 cup),3,60,.5,1,12
 muffin (1x),6,400,15,30,55
 oatmeal (1x),4,120,1.5,9,26
+oatmeal cookie - the local (1x),3,200,8,14,30
+oatmeal - maple & brown sugar,4,160,0,0,0
 oat milk - unsweetened (1 cup),3,120,5,7,17
 olive oil (2 tsp),0,80,9,0,0
+orzo (3/4 cup),6,200,2,1,40
 pasta - Castelli o Canada (1/4),11,300,1.5,0,61
 pierogi (7x),11,380,5,2,48
 pizza slice (1x),10,250,9,2,31
@@ -73,6 +79,7 @@ scone (blueberry),5,420,18,20,45
 scone (pumpkin with icing),4,450,20,40,60
 spaghetti,8,221,1.5,1,43
 sweet potato (1x),2,112,0,6,24
+syrup - e.d. smith 75% less sugar (4 tbsp),0,40,0,9,9
 tart cherry juice (1 cup),2,130,0,21,34
 tempeh (half package),15,166,4,0,9
 tofu - epik eats - smoked meat (1/4),7,100,7,1,2
@@ -88,10 +95,3 @@ water (700ml),0,0,0,0,0
 yogourt - 0% fat greek-13 (3/4 cup),13,80,1,3,5
 yogourt - 0% fat greek-17 (3/4 cup),17,100,0,6,8
 yogourt - 0% fat greek-17-vegan (3/4 cup),17,100,0,6,8
-cheese - cottage 1% (1/2 cup),15,90,1,4,5
-syrup - e.d. smith 75% less sugar (4 tbsp),0,40,0,9,9
-bun - brioche - portofino,9,250,6,6,40
-kombucha - ginger (1 cup),0,38,0,4,4
-oatmeal cookie - the local (1x),3,200,8,14,30
-oatmeal - maple & brown sugar,4,160,0,0,0
-orzo (3/4 cup),6,200,2,1,40
