@@ -2,13 +2,13 @@
 
 <head>
 
-<meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="icon" href="img/favicon.png" type="image/png">
+<meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="icon" href="img/favicon.png" type="image/png">
 
 <title>Fitness Tracker</title>
 
 <!-- Chart.js --> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- PapaParse for CSV parsing --> <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
 <style>
 
@@ -28,6 +28,8 @@ select{ width:100%; padding:8px 10px; font-size:16px; border:1px solid #aaa; bor
 
 .error{ color:#b00020; background:#ffecec; }
 
+.success{ color:#176b2c; background:#ecf8ef; }
+
 .chart-container{ position:relative; height:400px; width:100%; margin-top:25px; background:white; padding:15px; border-radius:8px; border:1px solid #ccc; }
 
 .info-card{ background:white; margin-top:15px; padding:15px; border-radius:8px; border:1px solid #ccc; font-size:14px; color:#555; }
@@ -44,13 +46,23 @@ select{ width:100%; padding:8px 10px; font-size:16px; border:1px solid #aaa; bor
 
 <label for="fieldSelect"> Select Data to Graph </label>
 
-<select id="fieldSelect" disabled> <option value=""> Loading... </option> </select>
+<select id="fieldSelect" disabled>
 
-<div class="status" id="statusMessage"> Connecting to fitness log... </div>
+<option value=""> Loading... </option>
+
+</select>
+
+<div class="status" id="statusMessage"
+
+Connecting to fitness log... </div>
 
 </div>
 
-<div class="chart-container"> <canvas id="fitnessChart"></canvas> </div>
+<div class="chart-container">
+
+<canvas id="fitnessChart"></canvas>
+
+</div>
 
 <div class="info-card">
 
@@ -68,31 +80,161 @@ Select a field above to change the graph.
 
 /* ==================================================== CONFIGURATION ==================================================== */
 
-const FITNESSLOGURL = "https://raw.githubusercontent.com/bcdatavis/fitness-tracker/refs/heads/main/log/fitness-log.csv";
+/* IMPORTANT:
+
+Use the direct RAW GitHub URL.
+
+This is the same style of URL that you provided in your original question. */
+
+const FITNESSLOGURL = "https://raw.githubusercontent.com/bcdatavis/fitness-tracker/main/log/fitness-log.csv";
 
 /* ==================================================== GLOBALS ==================================================== */
 
-let fitnessData = []; let fitnessChartInstance = null;
+let fitnessData = [];
 
-/* ==================================================== STATUS MESSAGE ==================================================== */
+let fitnessChartInstance = null;
 
-function updateStatus(message, isError = false){
+/* ==================================================== STATUS ==================================================== */
 
-const status = document.getElementById("statusMessage");
+function updateStatus( message, type = "" ){
+
+const status = document.getElementById( "statusMessage" );
 
 status.textContent = message;
 
-status.classList.toggle( "error", isError );
+status.className = "status";
+
+if(type){
+
+status.classList.add(type);
 
 }
 
-/* ==================================================== CLEAN CSV VALUE ==================================================== */
+}
+
+/* ==================================================== CSV PARSER ====================================================
+
+This handles commas inside quoted fields.
+
+For example:
+
+"Thursday, July 30, 2026"
+
+will remain one field.
+
+==================================================== */
+
+function parseCSV(csv){
+
+const rows = [];
+
+let row = [];
+
+let value = "";
+
+let insideQuotes = false;
+
+for( let i = 0; i < csv.length; i++ ){
+
+const character = csv[i];
+
+/* Handle quotation marks. */
+
+if(character === '"'){
+
+/* Two quotes inside a quoted field represent one quote. */
+
+if( insideQuotes && csv[i + 1] === '"' ){
+
+value += '"';
+
+i++;
+
+} else{
+
+insideQuotes = !insideQuotes;
+
+}
+
+continue;
+
+}
+
+/* Comma outside quotes = next field. */
+
+if( character === "," && !insideQuotes ){
+
+row.push(value);
+
+value = "";
+
+continue;
+
+}
+
+/* Newline outside quotes = next row. */
+
+if( ( character === "\n" || character === "\r" ) && !insideQuotes ){
+
+/* Handle Windows CR/LF. */
+
+if( character === "\r" && csv[i + 1] === "\n" ){
+
+i++;
+
+}
+
+row.push(value);
+
+value = "";
+
+/* Don't add completely empty rows. */
+
+if( row.some( cell => cell.trim() !== "" ) ){
+
+rows.push(row);
+
+}
+
+row = [];
+
+continue;
+
+}
+
+value += character;
+
+}
+
+/* Add final field/row. */
+
+if( value !== "" || row.length > 0 ){
+
+row.push(value);
+
+if( row.some( cell => cell.trim() !== "" ) ){
+
+rows.push(row);
+
+}
+
+}
+
+return rows;
+
+}
+
+/* ==================================================== CLEAN VALUE ==================================================== */
 
 function cleanValue(value){
 
-if(value === null || value === undefined){ return ""; }
+if( value === null || value === undefined ){
 
-return String(value) .replace(/^"|"$/g, "") .trim();
+return "";
+
+}
+
+return String(value) .trim();
 
 }
 
@@ -100,7 +242,7 @@ return String(value) .replace(/^"|"$/g, "") .trim();
 
 function formatFieldName(field){
 
-return field .replace(/[_-]+/g, " ") .replace(/\b\w/g, char => char.toUpperCase() );
+return field .replace(/[_-]+/g, " ") .replace( /\b\w/g, character => character.toUpperCase() );
 
 }
 
@@ -110,7 +252,11 @@ function formatDate(dateString){
 
 const date = new Date(dateString);
 
-if(isNaN(date.getTime())){ return dateString; }
+if( isNaN( date.getTime() ) ){
+
+return dateString;
+
+}
 
 return new Intl.DateTimeFormat( "en-GB", { day:"2-digit", month:"2-digit", year:"numeric" } ).format(date);
 
@@ -124,55 +270,111 @@ const startTime = performance.now();
 
 try{
 
+/*
+
+STEP 1
+
+*/
+
+updateStatus( "Connecting to GitHub..." );
+
+/* Create a timeout.
+
+If GitHub doesn't respond within 10 seconds, we'll report it. */
+
+const controller = new AbortController();
+
+const timeout = setTimeout( () => controller.abort(), 10000 );
+
+/*
+
+STEP 2
+
+*/
+
 updateStatus( "Downloading fitness log..." );
 
-/* Fetch the CSV. */
+const response = await fetch( FITNESSLOGURL + "?t=" + Date.now(), { signal: controller.signal,
 
-const response = await fetch(FITNESSLOGURL);
+cache:"no-store" } );
+
+clearTimeout(timeout);
+
+/* Check HTTP status. */
 
 if(!response.ok){
 
-throw new Error( "HTTP error " + response.status );
+throw new Error( "GitHub returned HTTP " + response.status );
 
 }
+
+/*
+
+STEP 3
+
+*/
 
 updateStatus( "Reading fitness log..." );
 
 const csvText = await response.text();
 
-/* Parse CSV. */
+if(!csvText){
 
-const parsed = Papa.parse( csvText, { header:true, skipEmptyLines:true } );
-
-if(parsed.errors && parsed.errors.length > 0){
-
-console.warn( "CSV parsing warnings:", parsed.errors );
+throw new Error( "The CSV file was empty." );
 
 }
 
-fitnessData = parsed.data;
+/*
 
-if(fitnessData.length === 0){
+STEP 4
 
-throw new Error( "The fitness log is empty." );
+*/
+
+const rows = parseCSV(csvText);
+
+if(rows.length < 2){
+
+throw new Error( "The CSV does not contain any data rows." );
 
 }
 
-/* Get the column names directly from the CSV header. */
+/* First row = column headers. */
 
-const fields = parsed.meta.fields || [];
+const headers = rows[0].map( header => cleanValue(header) );
 
-/* Identify numeric columns.
+/* Convert rows into objects. */
 
-Rather than scanning every column repeatedly, we create a flag for each column and examine the rows once. */
+fitnessData = [];
+
+for( let i = 1; i < rows.length; i++ ){
+
+const row = {};
+
+headers.forEach( (header, index) => {
+
+row[header] = cleanValue( rows[i][index] );
+
+} );
+
+fitnessData.push(row);
+
+}
+
+/*
+
+STEP 5
+
+Find numeric fields.
+
+*/
+
+updateStatus( "Finding available fields..." );
 
 const numericFields = [];
 
-const fieldHasNumber = {};
+headers.forEach( field => {
 
-fields.forEach(field => {
-
-/* These are known non-numeric fields. */
+/* These are text/date fields. */
 
 if( field === "user" || field === "date" || field === "exercise" || field === "notes" ){
 
@@ -180,81 +382,81 @@ return;
 
 }
 
-fieldHasNumber[field] = false;
+/* Look for at least one numeric value.
 
-});
+*/
 
-/* One pass through the data.
+const hasNumber = fitnessData.some( row => {
 
-As soon as a numeric value is found in a column, that column qualifies. */
+const value = cleanValue( row[field] );
 
-for( let rowIndex = 0; rowIndex < fitnessData.length; rowIndex++ ){
+return ( value !== "" && isFinite( Number(value) ) );
 
-const row = fitnessData[rowIndex];
+} );
 
-for( const field in fieldHasNumber ){
+if(hasNumber){
 
-if(fieldHasNumber[field]){ continue; }
-
-const value = cleanValue(row[field]);
-
-if( value !== "" && isFinite(Number(value)) ){
-
-fieldHasNumber[field] = true;
+numericFields.push( field );
 
 }
 
-}
+} );
 
-}
-
-/* Build the final list. */
-
-fields.forEach(field => {
-
-if(fieldHasNumber[field]){
-
-numericFields.push(field);
-
-}
-
-});
-
-/* Populate dropdown. */
-
-populateFieldSelector( numericFields );
-
-/* Stop if no numeric fields exist. */
-
-if(numericFields.length === 0){
+if( numericFields.length === 0 ){
 
 throw new Error( "No numeric fields were found." );
 
 }
 
-/* Select the first field. */
+/*
+
+STEP 6
+
+Populate dropdown. */
+
+populateFieldSelector( numericFields );
+
+/* Enable dropdown. */
 
 const select = document.getElementById( "fieldSelect" );
 
-select.value = numericFields[0];
-
 select.disabled = false;
 
-/* Draw first chart. */
+/* Select first field. */
+
+select.value = numericFields[0];
+
+/*
+
+STEP 7
+
+*/
 
 renderChart( numericFields[0] );
 
-/* Show completion time. */
+/*
+
+DONE
+
+*/
 
 const elapsed = Math.round( performance.now() - startTime );
 
-updateStatus( ${fitnessData.length} entries loaded in ${elapsed} ms. );
+updateStatus( ${fitnessData.length} entries loaded in ${elapsed} ms., "success" );
 
 } catch(error){
 
-console.error( "Error loading fitness log:", error );
+console.error( "Fitness Tracker error:", error );
 
-updateStatus( "Error: " + error.message, true );
+if( error.name === "AbortError" ){
+
+updateStatus( "Timed out while connecting to GitHub. The CSV could not be downloaded within 10 seconds.", "error" );
+
+} else{
+
+updateStatus( "Error: " + error.message, "error" );
+
+}
 
 }
 
@@ -262,65 +464,65 @@ updateStatus( "Error: " + error.message, true );
 
 /* ==================================================== POPULATE FIELD SELECTOR ==================================================== */
 
-function populateFieldSelector(fields){
+function populateFieldSelector( fields ){
 
 const select = document.getElementById( "fieldSelect" );
 
 select.innerHTML = "";
 
-fields.forEach(field => {
+fields.forEach( field => {
 
-const option = document.createElement("option");
+const option = document.createElement( "option" );
 
 option.value = field;
 
-option.textContent = formatFieldName(field);
+option.textContent = formatFieldName( field );
 
-select.appendChild(option);
+select.appendChild( option );
 
-});
+} );
 
 }
 
 /* ==================================================== RENDER CHART ==================================================== */
 
-function renderChart(selectedField){
+function renderChart( selectedField ){
 
 const canvas = document.getElementById( "fitnessChart" );
 
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext( "2d" );
 
-/* Destroy existing chart. */
+/* Destroy previous chart. */
 
-if(fitnessChartInstance){
+if( fitnessChartInstance ){
 
 fitnessChartInstance.destroy();
 
-fitnessChartInstance = null;
+}
+
+const labels = [];
+
+const dataPoints = [];
+
+/* Build chart data. */
+
+fitnessData.forEach( row => {
+
+const dateValue = cleanValue( row.date );
+
+if( dateValue === "" ){
+
+return;
 
 }
 
-/* Create labels and values. */
-
-const labels = []; const dataPoints = [];
-
-fitnessData.forEach(row => {
-
-const dateValue = cleanValue(row.date);
-
-if(dateValue === ""){ return; }
-
 const fieldValue = cleanValue( row[selectedField] );
 
-labels.push( formatDate(dateValue) );
+labels.push( formatDate( dateValue ) );
 
-/* Blank cells become null.
+if( fieldValue === "" || !isFinite( Number(fieldValue) ) ){
 
-Chart.js will leave a gap instead of incorrectly plotting them as zero. */
-
-if( fieldValue === "" || !isFinite(Number(fieldValue)) ){
-
-dataPoints.push(null);
+dataPoints.push( null );
 
 } else{
 
@@ -328,9 +530,9 @@ dataPoints.push( Number(fieldValue) );
 
 }
 
-});
+} );
 
-/* Create Chart.js chart. */
+/* Create chart. */
 
 fitnessChartInstance = new Chart( ctx, {
 
@@ -344,7 +546,7 @@ datasets:[{
 
 label: formatFieldName( selectedField ),
 
-data:dataPoints,
+data: dataPoints,
 
 borderColor: "rgba(54, 162, 235, 1)",
 
@@ -392,7 +594,7 @@ tooltip:{
 
 callbacks:{
 
-label:function(context){
+label: function(context){
 
 return ( " " + formatFieldName( selectedField ) + ": " + context.parsed.y );
 
@@ -440,9 +642,9 @@ text:"Date"
 
 }
 
-/* ==================================================== FIELD SELECTOR ==================================================== */
+/* ==================================================== DROPDOWN EVENT ==================================================== */
 
-document .getElementById("fieldSelect") .addEventListener( "change", function(){
+document .getElementById( "fieldSelect" ) .addEventListener( "change", function(){
 
 if(this.value){
 
@@ -452,7 +654,7 @@ renderChart( this.value );
 
 } );
 
-/* ==================================================== INITIALIZE ==================================================== */
+/* ==================================================== START ==================================================== */
 
 loadFitnessLog();
 
