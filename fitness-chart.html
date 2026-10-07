@@ -26,11 +26,11 @@ select{ width:100%; padding:8px 10px; font-size:16px; border:1px solid #aaa; bor
 
 .status{ margin-top:12px; padding:10px; background:#f8f8f8; border-radius:5px; color:#555; font-size:14px; }
 
+.error{ color:#b00020; background:#ffecec; }
+
 .chart-container{ position:relative; height:400px; width:100%; margin-top:25px; background:white; padding:15px; border-radius:8px; border:1px solid #ccc; }
 
 .info-card{ background:white; margin-top:15px; padding:15px; border-radius:8px; border:1px solid #ccc; font-size:14px; color:#555; }
-
-.error{ color:#b00020; background:#ffecec; }
 
 </style>
 
@@ -44,9 +44,9 @@ select{ width:100%; padding:8px 10px; font-size:16px; border:1px solid #aaa; bor
 
 <label for="fieldSelect"> Select Data to Graph </label>
 
-<select id="fieldSelect"> <option value=""> Loading fields... </option> </select>
+<select id="fieldSelect" disabled> <option value=""> Loading... </option> </select>
 
-<div class="status" id="statusMessage"> Loading fitness log... </div>
+<div class="status" id="statusMessage"> Connecting to fitness log... </div>
 
 </div>
 
@@ -60,7 +60,7 @@ fitness-log.csv
 
 <br><br>
 
-The graph automatically detects numeric fields in the CSV file. If you add another numeric column to the log, it will automatically appear in the list above.
+Select a field above to change the graph.
 
 </div>
 
@@ -72,137 +72,27 @@ const FITNESSLOGURL = "https://raw.githubusercontent.com/bcdatavis/fitness-track
 
 /* ==================================================== GLOBALS ==================================================== */
 
-let fitnessData = []; let csvFields = []; let fitnessChartInstance = null;
+let fitnessData = []; let fitnessChartInstance = null;
 
-/* ==================================================== LOAD FITNESS LOG ==================================================== */
+/* ==================================================== STATUS MESSAGE ==================================================== */
 
-async function loadFitnessLog(){
+function updateStatus(message, isError = false){
 
-try{
+const status = document.getElementById("statusMessage");
 
-updateStatus("Loading fitness log...");
+status.textContent = message;
 
-const response = await fetch(FITNESSLOGURL);
-
-if(!response.ok){ throw new Error( "Unable to load fitness-log.csv" ); }
-
-const csvText = await response.text();
-
-/* Parse CSV using PapaParse */
-
-const parsed = Papa.parse( csvText, { header:true, skipEmptyLines:true, dynamicTyping:false } );
-
-if(parsed.errors && parsed.errors.length > 0){
-
-console.warn( "CSV parsing warnings:", parsed.errors );
+status.classList.toggle( "error", isError );
 
 }
 
-fitnessData = parsed.data;
-
-if(fitnessData.length === 0){
-
-throw new Error( "The fitness log contains no data." );
-
-}
-
-/* Get the CSV column names.
-
-PapaParse puts the headers into parsed.meta.fields. */
-
-csvFields = parsed.meta.fields || [];
-
-/* Find fields that contain numeric data.
-
-The date field is deliberately excluded because it is used for the X axis. */
-
-const numericFields = csvFields.filter(field => {
-
-if(field === "date"){ return false; }
-
-return fitnessData.some(row => {
-
-const value = cleanValue(row[field]);
-
-return ( value !== "" && !isNaN(Number(value)) );
-
-});
-
-});
-
-/* Populate the dropdown. */
-
-populateFieldSelector(numericFields);
-
-/* Select the first available field. */
-
-if(numericFields.length > 0){
-
-document.getElementById( "fieldSelect" ).value = numericFields[0];
-
-renderChart(numericFields[0]);
-
-updateStatus( ${fitnessData.length} entries loaded. );
-
-} else{
-
-updateStatus( "No numeric fields were found in the log.", true );
-
-}
-
-} catch(error){
-
-console.error( "Error loading fitness log:", error );
-
-updateStatus( "Error loading fitness log: " + error.message, true );
-
-}
-
-}
-
-/* ==================================================== CLEAN CSV VALUES ==================================================== */
+/* ==================================================== CLEAN CSV VALUE ==================================================== */
 
 function cleanValue(value){
 
 if(value === null || value === undefined){ return ""; }
 
 return String(value) .replace(/^"|"$/g, "") .trim();
-
-}
-
-/* ==================================================== POPULATE FIELD SELECTOR ==================================================== */
-
-function populateFieldSelector(fields){
-
-const select = document.getElementById("fieldSelect");
-
-select.innerHTML = "";
-
-if(fields.length === 0){
-
-const option = document.createElement("option");
-
-option.value = "";
-
-option.textContent = "No numeric fields available";
-
-select.appendChild(option);
-
-return; }
-
-fields.forEach(field => {
-
-const option = document.createElement("option");
-
-option.value = field;
-
-/* Convert field names such as: "bike ride" "calories" "protein" into readable labels. */
-
-option.textContent = formatFieldName(field);
-
-select.appendChild(option);
-
-});
 
 }
 
@@ -214,6 +104,184 @@ return field .replace(/[_-]+/g, " ") .replace(/\b\w/g, char => char.toUpperCase(
 
 }
 
+/* ==================================================== FORMAT DATE ==================================================== */
+
+function formatDate(dateString){
+
+const date = new Date(dateString);
+
+if(isNaN(date.getTime())){ return dateString; }
+
+return new Intl.DateTimeFormat( "en-GB", { day:"2-digit", month:"2-digit", year:"numeric" } ).format(date);
+
+}
+
+/* ==================================================== LOAD FITNESS LOG ==================================================== */
+
+async function loadFitnessLog(){
+
+const startTime = performance.now();
+
+try{
+
+updateStatus( "Downloading fitness log..." );
+
+/* Fetch the CSV. */
+
+const response = await fetch(FITNESSLOGURL);
+
+if(!response.ok){
+
+throw new Error( "HTTP error " + response.status );
+
+}
+
+updateStatus( "Reading fitness log..." );
+
+const csvText = await response.text();
+
+/* Parse CSV. */
+
+const parsed = Papa.parse( csvText, { header:true, skipEmptyLines:true } );
+
+if(parsed.errors && parsed.errors.length > 0){
+
+console.warn( "CSV parsing warnings:", parsed.errors );
+
+}
+
+fitnessData = parsed.data;
+
+if(fitnessData.length === 0){
+
+throw new Error( "The fitness log is empty." );
+
+}
+
+/* Get the column names directly from the CSV header. */
+
+const fields = parsed.meta.fields || [];
+
+/* Identify numeric columns.
+
+Rather than scanning every column repeatedly, we create a flag for each column and examine the rows once. */
+
+const numericFields = [];
+
+const fieldHasNumber = {};
+
+fields.forEach(field => {
+
+/* These are known non-numeric fields. */
+
+if( field === "user" || field === "date" || field === "exercise" || field === "notes" ){
+
+return;
+
+}
+
+fieldHasNumber[field] = false;
+
+});
+
+/* One pass through the data.
+
+As soon as a numeric value is found in a column, that column qualifies. */
+
+for( let rowIndex = 0; rowIndex < fitnessData.length; rowIndex++ ){
+
+const row = fitnessData[rowIndex];
+
+for( const field in fieldHasNumber ){
+
+if(fieldHasNumber[field]){ continue; }
+
+const value = cleanValue(row[field]);
+
+if( value !== "" && isFinite(Number(value)) ){
+
+fieldHasNumber[field] = true;
+
+}
+
+}
+
+}
+
+/* Build the final list. */
+
+fields.forEach(field => {
+
+if(fieldHasNumber[field]){
+
+numericFields.push(field);
+
+}
+
+});
+
+/* Populate dropdown. */
+
+populateFieldSelector( numericFields );
+
+/* Stop if no numeric fields exist. */
+
+if(numericFields.length === 0){
+
+throw new Error( "No numeric fields were found." );
+
+}
+
+/* Select the first field. */
+
+const select = document.getElementById( "fieldSelect" );
+
+select.value = numericFields[0];
+
+select.disabled = false;
+
+/* Draw first chart. */
+
+renderChart( numericFields[0] );
+
+/* Show completion time. */
+
+const elapsed = Math.round( performance.now() - startTime );
+
+updateStatus( ${fitnessData.length} entries loaded in ${elapsed} ms. );
+
+} catch(error){
+
+console.error( "Error loading fitness log:", error );
+
+updateStatus( "Error: " + error.message, true );
+
+}
+
+}
+
+/* ==================================================== POPULATE FIELD SELECTOR ==================================================== */
+
+function populateFieldSelector(fields){
+
+const select = document.getElementById( "fieldSelect" );
+
+select.innerHTML = "";
+
+fields.forEach(field => {
+
+const option = document.createElement("option");
+
+option.value = field;
+
+option.textContent = formatFieldName(field);
+
+select.appendChild(option);
+
+});
+
+}
+
 /* ==================================================== RENDER CHART ==================================================== */
 
 function renderChart(selectedField){
@@ -222,7 +290,7 @@ const canvas = document.getElementById( "fitnessChart" );
 
 const ctx = canvas.getContext("2d");
 
-/* Destroy the previous chart before creating a new one. */
+/* Destroy existing chart. */
 
 if(fitnessChartInstance){
 
@@ -232,27 +300,25 @@ fitnessChartInstance = null;
 
 }
 
-/* Build labels and data.
+/* Create labels and values. */
 
-Rows with an invalid numeric value are represented by null. Chart.js will leave a gap rather than treating the value as zero. */
-
-const labels = [];
-
-const dataPoints = [];
+const labels = []; const dataPoints = [];
 
 fitnessData.forEach(row => {
 
 const dateValue = cleanValue(row.date);
 
-const fieldValue = cleanValue(row[selectedField]);
-
-/* Only include rows with a date. */
-
 if(dateValue === ""){ return; }
+
+const fieldValue = cleanValue( row[selectedField] );
 
 labels.push( formatDate(dateValue) );
 
-if( fieldValue === "" || isNaN(Number(fieldValue)) ){
+/* Blank cells become null.
+
+Chart.js will leave a gap instead of incorrectly plotting them as zero. */
+
+if( fieldValue === "" || !isFinite(Number(fieldValue)) ){
 
 dataPoints.push(null);
 
@@ -264,11 +330,15 @@ dataPoints.push( Number(fieldValue) );
 
 });
 
-/* Create the chart. */
+/* Create Chart.js chart. */
 
-fitnessChartInstance = new Chart( ctx, { type:"line",
+fitnessChartInstance = new Chart( ctx, {
 
-data:{ labels:labels,
+type:"line",
+
+data:{
+
+labels:labels,
 
 datasets:[{
 
@@ -292,7 +362,9 @@ fill:false,
 
 spanGaps:false
 
-}] },
+}]
+
+},
 
 options:{
 
@@ -300,13 +372,25 @@ responsive:true,
 
 maintainAspectRatio:false,
 
-interaction:{ mode:"index", intersect:false },
+interaction:{
+
+mode:"index",
+
+intersect:false
+
+},
 
 plugins:{
 
-legend:{ display:true },
+legend:{
 
-tooltip:{ callbacks:{
+display:true
+
+},
+
+tooltip:{
+
+callbacks:{
 
 label:function(context){
 
@@ -326,17 +410,25 @@ y:{
 
 beginAtZero:false,
 
-title:{ display:true,
+title:{
 
-text: formatFieldName( selectedField ) }
+display:true,
+
+text: formatFieldName( selectedField )
+
+}
 
 },
 
 x:{
 
-title:{ display:true,
+title:{
 
-text:"Date" }
+display:true,
+
+text:"Date"
+
+}
 
 }
 
@@ -348,49 +440,13 @@ text:"Date" }
 
 }
 
-/* ==================================================== FORMAT DATE ==================================================== */
-
-function formatDate(dateString){
-
-/* The log contains dates such as:
-
-Sunday, July 26, 2026
-
-JavaScript can normally parse these, but if it cannot, simply return the original value. */
-
-const date = new Date(dateString);
-
-if(isNaN(date.getTime())){
-
-return dateString;
-
-}
-
-return new Intl.DateTimeFormat( "en-GB", { day:"2-digit", month:"2-digit", year:"numeric" } ).format(date);
-
-}
-
-/* ==================================================== STATUS MESSAGE ==================================================== */
-
-function updateStatus( message, isError = false ){
-
-const status = document.getElementById( "statusMessage" );
-
-status.textContent = message;
-
-status.classList.toggle( "error", isError );
-
-}
-
-/* ==================================================== FIELD SELECTOR EVENT ==================================================== */
+/* ==================================================== FIELD SELECTOR ==================================================== */
 
 document .getElementById("fieldSelect") .addEventListener( "change", function(){
 
-const selectedField = this.value;
+if(this.value){
 
-if(selectedField){
-
-renderChart( selectedField );
+renderChart( this.value );
 
 }
 
@@ -398,11 +454,7 @@ renderChart( selectedField );
 
 /* ==================================================== INITIALIZE ==================================================== */
 
-(async function(){
-
-await loadFitnessLog();
-
-})();
+loadFitnessLog();
 
 </script>
 
