@@ -82,6 +82,157 @@ Choose a field above to change the graph.
 
 const FITNESSLOGURL = "https://raw.githubusercontent.com/bcdatavis/fitness-tracker/main/log/fitness-log.csv";
 
+const TARGET_RANGES = {
+
+    protein: {
+        min: 120,
+        max: 150
+    },
+
+    calories: {
+        min: 2450,
+        max: 2700
+    },
+
+    fat: {
+        min: 60,
+        max: 75
+    },
+
+    sugar: {
+        min: 100,
+        max: 120
+    },
+
+    carbs: {
+        min: 300,
+        max: 350
+    }
+
+};
+
+
+const targetRangePlugin = {
+
+    id: "targetRange",
+
+    beforeDraw(chart) {
+
+        const field =
+            chart.config.options.targetField;
+
+        const range =
+            TARGET_RANGES[field];
+
+        /*
+        No target range for this field.
+        */
+
+        if(!range){
+            return;
+        }
+
+
+        const {
+            ctx,
+            chartArea,
+            scales
+        } = chart;
+
+
+        const y =
+            scales.y;
+
+
+        const top =
+            y.getPixelForValue(
+                range.max
+            );
+
+
+        const bottom =
+            y.getPixelForValue(
+                range.min
+            );
+
+
+        ctx.save();
+
+
+        /*
+        Green target area.
+        */
+
+        ctx.fillStyle =
+            "rgba(76, 175, 80, 0.18)";
+
+
+        ctx.fillRect(
+
+            chartArea.left,
+
+            top,
+
+            chartArea.right -
+                chartArea.left,
+
+            bottom - top
+
+        );
+
+
+        /*
+        Top target boundary.
+        */
+
+        ctx.strokeStyle =
+            "rgba(76, 175, 80, 0.8)";
+
+        ctx.lineWidth = 2;
+
+        ctx.setLineDash([6,6]);
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            chartArea.left,
+            top
+        );
+
+        ctx.lineTo(
+            chartArea.right,
+            top
+        );
+
+        ctx.stroke();
+
+
+        /*
+        Bottom target boundary.
+        */
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            chartArea.left,
+            bottom
+        );
+
+        ctx.lineTo(
+            chartArea.right,
+            bottom
+        );
+
+        ctx.stroke();
+
+
+        ctx.restore();
+
+    }
+
+};
+    
 /* ==================================================== GLOBALS ==================================================== */
 
 let fitnessData = [];
@@ -598,6 +749,7 @@ function renderChart(field){
 
                 options:{
 
+                    targetField:field,
                     responsive:true,
 
                     maintainAspectRatio:false,
@@ -657,7 +809,11 @@ function renderChart(field){
 
                     }
 
-                }
+                },
+
+                plugins:[
+                    targetRangePlugin
+                ]
 
             }
         );
