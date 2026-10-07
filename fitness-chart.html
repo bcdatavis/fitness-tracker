@@ -402,143 +402,265 @@ setStatus( "Error: " + error.message, "error" );
 
 /* ==================================================== DRAW CHART ==================================================== */
 
-function renderChart( field ){
+function renderChart(field){
 
-const canvas = document.getElementById( "fitnessChart" );
+    const canvas =
+        document.getElementById("fitnessChart");
 
-/* Destroy previous chart. */
+    /*
+    Destroy previous chart.
+    */
 
-if(fitnessChart){
+    if(fitnessChart){
 
-fitnessChart.destroy();
+        fitnessChart.destroy();
 
-}
+    }
 
-/* Create arrays. */
 
-const labels = [];
+    /*
+    Create arrays.
+    */
 
-const values = [];
+    const labels = [];
+    const values = [];
 
-fitnessData.forEach( row => {
 
-const date = String( row.date || "" ).trim();
+    fitnessData.forEach(row => {
 
-if( date === "" ){
+        const date =
+            String(row.date || "").trim();
 
-return;
 
-}
+        if(date === ""){
+            return;
+        }
 
-labels.push( formatDate(date) );
 
-const value = String( row[field] || "" ).trim();
+        labels.push(
+            formatDate(date)
+        );
 
-if( value === "" || isNaN( Number(value) ) ){
 
-values.push( null );
+        const value =
+            String(row[field] || "").trim();
 
-} else{
 
-values.push( Number(value) );
+        if(
+            value === "" ||
+            isNaN(Number(value))
+        ){
 
-}
+            values.push(null);
 
-} );
+        }
+        else{
 
-/* Create chart. */
+            values.push(
+                Number(value)
+            );
 
-fitnessChart = new Chart( canvas, {
+        }
 
-type:"line",
+    });
 
-data:{
 
-labels:labels,
+    /*
+    Find the actual minimum and maximum
+    values in the selected field.
+    */
 
-datasets:[{
+    const validValues =
+        values.filter(
+            value => value !== null
+        );
 
-label: formatFieldName( field ),
 
-data:values,
+    let yMin = undefined;
+    let yMax = undefined;
 
-borderColor: "rgb(54,162,235)",
 
-backgroundColor: "rgba(54,162,235,0.15)",
+    if(validValues.length > 0){
 
-borderWidth:2,
+        const dataMin =
+            Math.min(...validValues);
 
-pointRadius:4,
+        const dataMax =
+            Math.max(...validValues);
 
-pointHoverRadius:6,
+        const range =
+            dataMax - dataMin;
 
-tension:0.15,
 
-fill:false,
+        /*
+        Add approximately 50% of the
+        data range as padding above and
+        below the data.
 
-spanGaps:true
+        This makes the graph visually
+        flatter and easier to read.
+        */
 
-}]
+        let padding;
 
-},
 
-options:{
+        if(range === 0){
 
-responsive:true,
+            /*
+            If all values are identical,
+            create a reasonable range.
+            */
 
-maintainAspectRatio:false,
+            padding =
+                Math.max(
+                    Math.abs(dataMin) * 0.10,
+                    1
+                );
 
-interaction:{
+        }
+        else{
 
-mode:"index",
+            padding =
+                range * 0.50;
 
-intersect:false
+        }
 
-},
 
-plugins:{
+        yMin =
+            dataMin - padding;
 
-legend:{
+        yMax =
+            dataMax + padding;
 
-display:true
 
-}
+        /*
+        Don't allow a negative minimum for
+        quantities that naturally cannot be
+        negative.
+        */
 
-},
+        if(dataMin >= 0){
 
-scales:{
+            yMin =
+                Math.max(
+                    0,
+                    yMin
+                );
 
-y:{
+        }
 
-beginAtZero:false,
+    }
 
-title:{
 
-display:true,
+    /*
+    Create chart.
+    */
 
-text: formatFieldName( field )
+    fitnessChart =
+        new Chart(
+            canvas,
+            {
 
-}
+                type:"line",
 
-},
+                data:{
 
-x:{
+                    labels:labels,
 
-title:{
+                    datasets:[{
 
-display:true,
+                        label:
+                            formatFieldName(field),
 
-text:"Date"
+                        data:values,
 
-}
+                        borderColor:
+                            "rgb(54,162,235)",
 
-}
+                        backgroundColor:
+                            "rgba(54,162,235,0.15)",
 
-}
+                        borderWidth:2,
 
-}
+                        pointRadius:4,
 
-} );
+                        pointHoverRadius:6,
+
+                        tension:0.15,
+
+                        fill:false,
+
+                        spanGaps:true
+
+                    }]
+
+                },
+
+                options:{
+
+                    responsive:true,
+
+                    maintainAspectRatio:false,
+
+                    interaction:{
+
+                        mode:"index",
+
+                        intersect:false
+
+                    },
+
+                    plugins:{
+
+                        legend:{
+
+                            display:true
+
+                        }
+
+                    },
+
+                    scales:{
+
+                        y:{
+
+                            /*
+                            Use our calculated range.
+                            */
+
+                            min:yMin,
+
+                            max:yMax,
+
+                            title:{
+
+                                display:true,
+
+                                text:
+                                    formatFieldName(field)
+
+                            }
+
+                        },
+
+                        x:{
+
+                            title:{
+
+                                display:true,
+
+                                text:"Date"
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
 
 }
 
