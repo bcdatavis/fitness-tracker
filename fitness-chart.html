@@ -2,27 +2,37 @@
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="img/favicon.png" type="image/png">
 
-<title>Fitness Log Test</title>
+<title>Fitness Tracker</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
-body{ font-family:Arial,sans-serif; max-width:700px; margin:auto; padding:20px; background:#f4f4f4; }
+*{ box-sizing:border-box; }
 
-h1{ text-align:center; }
+body{ font-family:Arial,sans-serif; max-width:800px; margin:auto; padding:12px; background:#f4f4f4; }
 
-.box{ background:white; padding:20px; border-radius:8px; border:1px solid #ccc; margin-top:20px; }
+h1{ text-align:center; margin-bottom:20px; }
 
-#status{ padding:15px; background:#eee; border-radius:6px; white-space:pre-wrap; word-break:break-word; }
+.control-card{ background:white; margin-top:15px; padding:15px; border-radius:8px; border:1px solid #ccc; }
 
-.success{ background:#e5f6e9 !important; color:#176b2c; }
+label{ display:block; font-weight:bold; margin-bottom:6px; }
 
-.error{ background:#ffe5e5 !important; color:#a00000; }
+select{ width:100%; padding:8px 10px; font-size:16px; border:1px solid #aaa; border-radius:5px; background:white; }
 
-pre{ white-space:pre-wrap; word-break:break-word; background:#222; color:#0f0; padding:15px; border-radius:6px; overflow:auto; }
+.status{ margin-top:12px; padding:10px; border-radius:5px; color:#555; background:#f8f8f8; font-size:14px; }
+
+.status.success{ color:#176b2c; background:#e9f7ed; }
+
+.status.error{ color:#a00000; background:#ffe8e8; }
+
+.chart-container{ position:relative; height:400px; width:100%; margin-top:25px; background:white; padding:15px; border-radius:8px; border:1px solid #ccc; }
+
+.info-card{ background:white; margin-top:15px; padding:15px; border-radius:8px; border:1px solid #ccc; font-size:14px; color:#555; }
 
 </style>
 
@@ -30,55 +40,217 @@ pre{ white-space:pre-wrap; word-break:break-word; background:#222; color:#0f0; p
 
 <body>
 
-<h1> Fitness Log Connection Test </h1>
+<h1> Fitness Tracker </h1>
 
-<div class="box">
+<div class="control-card">
 
-<div id="status"> Starting test... </div>
+<label for="fieldSelect"> Select Data to Graph </label>
+
+<select id="fieldSelect" disabled>
+
+<option value=""> Loading... </option>
+
+</select>
+
+<div id="statusMessage" class="status"
+
+Starting... </div>
 
 </div>
 
-<div class="box">
+<div class="chart-container">
 
-<strong>CSV Preview</strong>
+<canvas id="fitnessChart"></canvas>
 
-<pre id="preview"> Waiting... </pre>
+</div>
+
+<div class="info-card">
+
+<strong>Data source:</strong><br>
+
+fitness-log.csv
+
+<br><br>
+
+Choose a field above to change the graph.
 
 </div>
 
 <script>
 
-/* ==================================================== TEST URL ==================================================== */
+/* ==================================================== CONFIGURATION ==================================================== */
 
-const URL = "https://raw.githubusercontent.com/bcdatavis/fitness-tracker/main/log/fitness-log.csv";
+const FITNESSLOGURL = "https://raw.githubusercontent.com/bcdatavis/fitness-tracker/main/log/fitness-log.csv";
+
+/* ==================================================== GLOBALS ==================================================== */
+
+let fitnessData = [];
+
+let fitnessChart = null;
 
 /* ==================================================== STATUS ==================================================== */
 
-function status(message, type=""){
+function setStatus( message, type = "" ){
 
-const element = document.getElementById("status");
+const element = document.getElementById( "statusMessage" );
 
 element.textContent = message;
 
-element.className = type;
+element.className = "status " + type;
 
 }
 
-/* ==================================================== TEST ==================================================== */
+/* ==================================================== CSV PARSER ====================================================
 
-async function test(){
+This parser understands:
+
+commas
+quoted values
+commas inside quoted values
+blank fields
+==================================================== */
+
+function parseCSV(text){
+
+const rows = [];
+
+let row = [];
+
+let value = "";
+
+let quoted = false;
+
+for( let i = 0; i < text.length; i++ ){
+
+const c = text[i];
+
+/* Quotation mark */
+
+if(c === '"'){
+
+/* Two quotes inside a quoted field mean one quote. */
+
+if( quoted && text[i + 1] === '"' ){
+
+value += '"';
+
+i++;
+
+} else{
+
+quoted = !quoted;
+
+}
+
+continue;
+
+}
+
+/* Comma separates fields. */
+
+if( c === "," && !quoted ){
+
+row.push(value);
+
+value = "";
+
+continue;
+
+}
+
+/* Newline separates rows. */
+
+if( (c === "\n" || c === "\r") && !quoted ){
+
+if( c === "\r" && text[i + 1] === "\n" ){
+
+i++;
+
+}
+
+row.push(value);
+
+value = "";
+
+if( row.some( item => item.trim() !== "" ) ){
+
+rows.push(row);
+
+}
+
+row = [];
+
+continue;
+
+}
+
+value += c;
+
+}
+
+/* Final row. */
+
+if( value !== "" || row.length > 0 ){
+
+row.push(value);
+
+if( row.some( item => item.trim() !== "" ) ){
+
+rows.push(row);
+
+}
+
+}
+
+return rows;
+
+}
+
+/* ==================================================== FORMAT FIELD NAME ==================================================== */
+
+function formatFieldName( field ){
+
+return field .replace(/[_-]/g," ") .replace( /\b\w/g, character => character.toUpperCase() );
+
+}
+
+/* ==================================================== FORMAT DATE ==================================================== */
+
+function formatDate( value ){
+
+const date = new Date(value);
+
+if( isNaN( date.getTime() ) ){
+
+return value;
+
+}
+
+return new Intl.DateTimeFormat( "en-GB", { day:"2-digit", month:"2-digit", year:"numeric" } ).format(date);
+
+}
+
+/* ==================================================== LOAD DATA ==================================================== */
+
+async function loadData(){
 
 try{
 
-status( "1. JavaScript is running.\n\n" + "2. Attempting to connect to GitHub..." );
+/*
 
-/* Fetch GitHub file. */
+CONNECT
 
-const response = await fetch( URL, { cache:"no-store" } );
+*/
 
-/* Report HTTP status. */
+setStatus( "Connecting to GitHub..." );
 
-status( "3. GitHub responded.\n\n" + "HTTP status: " + response.status + "\n" + "Status text: " + response.statusText );
+/*
+
+DOWNLOAD
+
+*/
+
+const response = await fetch( FITNESSLOGURL, { cache:"no-store" } );
 
 if(!response.ok){
 
@@ -86,29 +258,301 @@ throw new Error( "GitHub returned HTTP " + response.status );
 
 }
 
-/* Read response. */
+/*
 
-const text = await response.text();
+READ CSV
 
-/* Show result. */
+*/
 
-document.getElementById( "preview" ).textContent = text.substring( 0, 2000 );
+setStatus( "Reading fitness log..." );
 
-status( "SUCCESS!\n\n" + "GitHub connection works.\n\n" + "Downloaded " + text.length + " characters from the CSV.", "success" );
+const csv = await response.text();
+
+/*
+
+PARSE
+
+*/
+
+const rows = parseCSV(csv);
+
+if(rows.length < 2){
+
+throw new Error( "No data rows were found." );
+
+}
+
+/* First row contains headers. */
+
+const headers = rows[0].map( header => header.trim() );
+
+/* Convert each CSV row into an object. */
+
+fitnessData = [];
+
+for( let i = 1; i < rows.length; i++ ){
+
+const object = {};
+
+headers.forEach( (header,index) => {
+
+object[header] = rows[i][index] ?? "";
+
+} );
+
+fitnessData.push( object );
+
+}
+
+/*
+
+FIND NUMERIC FIELDS
+
+*/
+
+setStatus( "Finding available fields..." );
+
+const numericFields = [];
+
+headers.forEach( field => {
+
+/* Skip fields that we know are not graphable numeric fields. */
+
+if( field === "user" || field === "date" || field === "exercise" || field === "notes" ){
+
+return;
+
+}
+
+/* Find at least one number. */
+
+for( let i = 0; i < fitnessData.length; i++ ){
+
+const value = String( fitnessData[i][field] ).trim();
+
+if( value !== "" && !isNaN( Number(value) ) ){
+
+numericFields.push( field );
+
+break;
+
+}
+
+}
+
+} );
+
+/* Make sure we found something. */
+
+if( numericFields.length === 0 ){
+
+throw new Error( "No numeric fields were found." );
+
+}
+
+/*
+
+POPULATE DROPDOWN
+
+*/
+
+const select = document.getElementById( "fieldSelect" );
+
+select.innerHTML = "";
+
+numericFields.forEach( field => {
+
+const option = document.createElement( "option" );
+
+option.value = field;
+
+option.textContent = formatFieldName( field );
+
+select.appendChild( option );
+
+} );
+
+select.disabled = false;
+
+/*
+
+DRAW FIRST CHART
+
+*/
+
+renderChart( numericFields[0] );
+
+/*
+
+SUCCESS
+
+*/
+
+setStatus( fitnessData.length + " entries loaded.", "success" );
 
 } catch(error){
 
-status( "FAILED\n\n" + "Error name: " + error.name + "\n\n" + "Error message: " + error.message + "\n\n" + "URL:\n" + URL, "error" );
+console.error( "Fitness Tracker:", error );
 
-console.error( error );
+setStatus( "Error: " + error.message, "error" );
+
+}
+
+}
+
+/* ==================================================== DRAW CHART ==================================================== */
+
+function renderChart( field ){
+
+const canvas = document.getElementById( "fitnessChart" );
+
+/* Destroy previous chart. */
+
+if(fitnessChart){
+
+fitnessChart.destroy();
+
+}
+
+/* Create arrays. */
+
+const labels = [];
+
+const values = [];
+
+fitnessData.forEach( row => {
+
+const date = String( row.date || "" ).trim();
+
+if( date === "" ){
+
+return;
+
+}
+
+labels.push( formatDate(date) );
+
+const value = String( row[field] || "" ).trim();
+
+if( value === "" || isNaN( Number(value) ) ){
+
+values.push( null );
+
+} else{
+
+values.push( Number(value) );
+
+}
+
+} );
+
+/* Create chart. */
+
+fitnessChart = new Chart( canvas, {
+
+type:"line",
+
+data:{
+
+labels:labels,
+
+datasets:[{
+
+label: formatFieldName( field ),
+
+data:values,
+
+borderColor: "rgb(54,162,235)",
+
+backgroundColor: "rgba(54,162,235,0.15)",
+
+borderWidth:2,
+
+pointRadius:4,
+
+pointHoverRadius:6,
+
+tension:0.15,
+
+fill:false,
+
+spanGaps:false
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false,
+
+interaction:{
+
+mode:"index",
+
+intersect:false
+
+},
+
+plugins:{
+
+legend:{
+
+display:true
+
+}
+
+},
+
+scales:{
+
+y:{
+
+beginAtZero:false,
+
+title:{
+
+display:true,
+
+text: formatFieldName( field )
+
+}
+
+},
+
+x:{
+
+title:{
+
+display:true,
+
+text:"Date"
 
 }
 
 }
+
+}
+
+}
+
+} );
+
+}
+
+/* ==================================================== DROPDOWN CHANGE ==================================================== */
+
+document .getElementById( "fieldSelect" ) .addEventListener( "change", function(){
+
+renderChart( this.value );
+
+} );
 
 /* ==================================================== START ==================================================== */
 
-test();
+loadData();
 
 </script>
 
