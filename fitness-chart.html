@@ -1,0 +1,411 @@
+<!DOCTYPE html> <html lang="en">
+
+<head>
+
+<meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="icon" href="img/favicon.png" type="image/png">
+
+<title>Fitness Tracker</title>
+
+<!-- Chart.js --> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- PapaParse for CSV parsing --> <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+<style>
+
+*{ box-sizing:border-box; }
+
+body{ font-family:Arial, sans-serif; max-width:800px; margin:auto; padding:12px; background:#f4f4f4; }
+
+h1{ text-align:center; margin-bottom:20px; }
+
+.control-card{ background:white; margin-top:15px; padding:15px; border-radius:8px; border:1px solid #ccc; }
+
+label{ display:block; font-weight:bold; margin-top:5px; margin-bottom:5px; }
+
+select{ width:100%; padding:8px 10px; font-size:16px; border:1px solid #aaa; border-radius:5px; background:white; }
+
+.status{ margin-top:12px; padding:10px; background:#f8f8f8; border-radius:5px; color:#555; font-size:14px; }
+
+.chart-container{ position:relative; height:400px; width:100%; margin-top:25px; background:white; padding:15px; border-radius:8px; border:1px solid #ccc; }
+
+.info-card{ background:white; margin-top:15px; padding:15px; border-radius:8px; border:1px solid #ccc; font-size:14px; color:#555; }
+
+.error{ color:#b00020; background:#ffecec; }
+
+</style>
+
+</head>
+
+<body>
+
+<h1> Fitness Tracker </h1>
+
+<div class="control-card">
+
+<label for="fieldSelect"> Select Data to Graph </label>
+
+<select id="fieldSelect"> <option value=""> Loading fields... </option> </select>
+
+<div class="status" id="statusMessage"> Loading fitness log... </div>
+
+</div>
+
+<div class="chart-container"> <canvas id="fitnessChart"></canvas> </div>
+
+<div class="info-card">
+
+<strong>Data source:</strong><br>
+
+fitness-log.csv
+
+<br><br>
+
+The graph automatically detects numeric fields in the CSV file. If you add another numeric column to the log, it will automatically appear in the list above.
+
+</div>
+
+<script>
+
+/* ==================================================== CONFIGURATION ==================================================== */
+
+const FITNESSLOGURL = "https://raw.githubusercontent.com/bcdatavis/fitness-tracker/refs/heads/main/log/fitness-log.csv";
+
+/* ==================================================== GLOBALS ==================================================== */
+
+let fitnessData = []; let csvFields = []; let fitnessChartInstance = null;
+
+/* ==================================================== LOAD FITNESS LOG ==================================================== */
+
+async function loadFitnessLog(){
+
+try{
+
+updateStatus("Loading fitness log...");
+
+const response = await fetch(FITNESSLOGURL);
+
+if(!response.ok){ throw new Error( "Unable to load fitness-log.csv" ); }
+
+const csvText = await response.text();
+
+/* Parse CSV using PapaParse */
+
+const parsed = Papa.parse( csvText, { header:true, skipEmptyLines:true, dynamicTyping:false } );
+
+if(parsed.errors && parsed.errors.length > 0){
+
+console.warn( "CSV parsing warnings:", parsed.errors );
+
+}
+
+fitnessData = parsed.data;
+
+if(fitnessData.length === 0){
+
+throw new Error( "The fitness log contains no data." );
+
+}
+
+/* Get the CSV column names.
+
+PapaParse puts the headers into parsed.meta.fields. */
+
+csvFields = parsed.meta.fields || [];
+
+/* Find fields that contain numeric data.
+
+The date field is deliberately excluded because it is used for the X axis. */
+
+const numericFields = csvFields.filter(field => {
+
+if(field === "date"){ return false; }
+
+return fitnessData.some(row => {
+
+const value = cleanValue(row[field]);
+
+return ( value !== "" && !isNaN(Number(value)) );
+
+});
+
+});
+
+/* Populate the dropdown. */
+
+populateFieldSelector(numericFields);
+
+/* Select the first available field. */
+
+if(numericFields.length > 0){
+
+document.getElementById( "fieldSelect" ).value = numericFields[0];
+
+renderChart(numericFields[0]);
+
+updateStatus( ${fitnessData.length} entries loaded. );
+
+} else{
+
+updateStatus( "No numeric fields were found in the log.", true );
+
+}
+
+} catch(error){
+
+console.error( "Error loading fitness log:", error );
+
+updateStatus( "Error loading fitness log: " + error.message, true );
+
+}
+
+}
+
+/* ==================================================== CLEAN CSV VALUES ==================================================== */
+
+function cleanValue(value){
+
+if(value === null || value === undefined){ return ""; }
+
+return String(value) .replace(/^"|"$/g, "") .trim();
+
+}
+
+/* ==================================================== POPULATE FIELD SELECTOR ==================================================== */
+
+function populateFieldSelector(fields){
+
+const select = document.getElementById("fieldSelect");
+
+select.innerHTML = "";
+
+if(fields.length === 0){
+
+const option = document.createElement("option");
+
+option.value = "";
+
+option.textContent = "No numeric fields available";
+
+select.appendChild(option);
+
+return; }
+
+fields.forEach(field => {
+
+const option = document.createElement("option");
+
+option.value = field;
+
+/* Convert field names such as: "bike ride" "calories" "protein" into readable labels. */
+
+option.textContent = formatFieldName(field);
+
+select.appendChild(option);
+
+});
+
+}
+
+/* ==================================================== FORMAT FIELD NAME ==================================================== */
+
+function formatFieldName(field){
+
+return field .replace(/[_-]+/g, " ") .replace(/\b\w/g, char => char.toUpperCase() );
+
+}
+
+/* ==================================================== RENDER CHART ==================================================== */
+
+function renderChart(selectedField){
+
+const canvas = document.getElementById( "fitnessChart" );
+
+const ctx = canvas.getContext("2d");
+
+/* Destroy the previous chart before creating a new one. */
+
+if(fitnessChartInstance){
+
+fitnessChartInstance.destroy();
+
+fitnessChartInstance = null;
+
+}
+
+/* Build labels and data.
+
+Rows with an invalid numeric value are represented by null. Chart.js will leave a gap rather than treating the value as zero. */
+
+const labels = [];
+
+const dataPoints = [];
+
+fitnessData.forEach(row => {
+
+const dateValue = cleanValue(row.date);
+
+const fieldValue = cleanValue(row[selectedField]);
+
+/* Only include rows with a date. */
+
+if(dateValue === ""){ return; }
+
+labels.push( formatDate(dateValue) );
+
+if( fieldValue === "" || isNaN(Number(fieldValue)) ){
+
+dataPoints.push(null);
+
+} else{
+
+dataPoints.push( Number(fieldValue) );
+
+}
+
+});
+
+/* Create the chart. */
+
+fitnessChartInstance = new Chart( ctx, { type:"line",
+
+data:{ labels:labels,
+
+datasets:[{
+
+label: formatFieldName( selectedField ),
+
+data:dataPoints,
+
+borderColor: "rgba(54, 162, 235, 1)",
+
+backgroundColor: "rgba(54, 162, 235, 0.15)",
+
+borderWidth:2,
+
+pointRadius:4,
+
+pointHoverRadius:6,
+
+tension:0.15,
+
+fill:false,
+
+spanGaps:false
+
+}] },
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false,
+
+interaction:{ mode:"index", intersect:false },
+
+plugins:{
+
+legend:{ display:true },
+
+tooltip:{ callbacks:{
+
+label:function(context){
+
+return ( " " + formatFieldName( selectedField ) + ": " + context.parsed.y );
+
+}
+
+}
+
+}
+
+},
+
+scales:{
+
+y:{
+
+beginAtZero:false,
+
+title:{ display:true,
+
+text: formatFieldName( selectedField ) }
+
+},
+
+x:{
+
+title:{ display:true,
+
+text:"Date" }
+
+}
+
+}
+
+}
+
+} );
+
+}
+
+/* ==================================================== FORMAT DATE ==================================================== */
+
+function formatDate(dateString){
+
+/* The log contains dates such as:
+
+Sunday, July 26, 2026
+
+JavaScript can normally parse these, but if it cannot, simply return the original value. */
+
+const date = new Date(dateString);
+
+if(isNaN(date.getTime())){
+
+return dateString;
+
+}
+
+return new Intl.DateTimeFormat( "en-GB", { day:"2-digit", month:"2-digit", year:"numeric" } ).format(date);
+
+}
+
+/* ==================================================== STATUS MESSAGE ==================================================== */
+
+function updateStatus( message, isError = false ){
+
+const status = document.getElementById( "statusMessage" );
+
+status.textContent = message;
+
+status.classList.toggle( "error", isError );
+
+}
+
+/* ==================================================== FIELD SELECTOR EVENT ==================================================== */
+
+document .getElementById("fieldSelect") .addEventListener( "change", function(){
+
+const selectedField = this.value;
+
+if(selectedField){
+
+renderChart( selectedField );
+
+}
+
+} );
+
+/* ==================================================== INITIALIZE ==================================================== */
+
+(async function(){
+
+await loadFitnessLog();
+
+})();
+
+</script>
+
+</body>
+
+</html>
