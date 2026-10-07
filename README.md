@@ -1,4 +1,4 @@
-[fitness-tracker](https://bcdatavis.github.io/fitness-tracker/index.html) | [fitness-log](https://github.com/bcdatavis/fitness-tracker/blob/main/log/fitness-log.csv)
+[fitness-tracker](https://bcdatavis.github.io/fitness-tracker/index.html) | [fitness-log](https://github.com/bcdatavis/fitness-tracker/blob/main/log/fitness-log.csv) | [weight-chart](https://bcdatavis.github.io/fitness-tracker/fitness-chart.html)
 
 [workout-tracker](https://bcdatavis.github.io/fitness-tracker/workout.html) | [workout-log](https://github.com/bcdatavis/fitness-tracker/blob/main/log/workout-log.csv)
 
