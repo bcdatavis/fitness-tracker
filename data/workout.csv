@@ -12,7 +12,7 @@ arms,isometrics - farmer carry,8,1,1,1,2
 arms,isometrics - suitcase carry,8,1,1,1,2
 arms,isometrics - tricep hold,red tube,1,1,1,2
 arms,isometrics - wrist extensors,3,1,1,1,2
-arms,lateral raise,5,8,8,8,2
+arms,lateral raise,5&8,8,8,8,2
 arms,scapular plane abduction,3&5,9,9,9,2
 arms,seated chest fly,red tube,8,8,8,2
 arms,seated low row,red tube,10,10,10,1
