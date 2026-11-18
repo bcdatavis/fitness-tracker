@@ -34,6 +34,34 @@ select{ width:100%; padding:8px 10px; font-size:16px; border:1px solid #aaa; bor
 
 .info-card{ background:white; margin-top:15px; padding:15px; border-radius:8px; border:1px solid #ccc; font-size:14px; color:#555; }
 
+.average-card{
+    margin-top:15px;
+    padding:15px;
+    background:#eef6fc;
+    border:1px solid #b8d8ee;
+    border-radius:8px;
+    text-align:center;
+}
+
+.average-title{
+    font-size:14px;
+    font-weight:bold;
+    color:#444;
+}
+
+.average-value{
+    font-size:30px;
+    font-weight:bold;
+    color:#176b2c;
+    margin-top:8px;
+}
+
+.average-count{
+    font-size:12px;
+    color:#666;
+    margin-top:5px;
+}
+    
 </style>
 
 </head>
@@ -51,6 +79,22 @@ select{ width:100%; padding:8px 10px; font-size:16px; border:1px solid #aaa; bor
 <option value=""> Loading... </option>
 
 </select>
+
+<div id="averageDisplay" class="average-card">
+
+    <div class="average-title">
+        Average – Previous 14 Days
+    </div>
+
+    <div id="averageValue" class="average-value">
+        --
+    </div>
+
+    <div id="averageCount" class="average-count">
+        Waiting for data...
+    </div>
+
+</div>
 
 <div id="statusMessage" class="status"
 
@@ -556,10 +600,116 @@ setStatus( "Error: " + error.message, "error" );
 
 }
 
+
+/* ====================================================
+   CALCULATE PREVIOUS 14 DAY AVERAGE
+==================================================== */
+
+function calculateAverage(field){
+
+    const today = new Date();
+
+    today.setHours(23,59,59,999);
+
+    const startDate = new Date(today);
+
+    startDate.setDate(
+        startDate.getDate() - 13
+    );
+
+    startDate.setHours(0,0,0,0);
+
+    let total = 0;
+
+    let count = 0;
+
+    fitnessData.forEach(row => {
+
+        const dateValue =
+            String(row.date || "").trim();
+
+        if(dateValue === ""){
+            return;
+        }
+
+        const date = new Date(dateValue);
+
+        if(isNaN(date.getTime())){
+            return;
+        }
+
+        /*
+        Only include entries within
+        the previous 14 calendar days.
+        */
+
+        if(
+            date < startDate ||
+            date > today
+        ){
+            return;
+        }
+
+        const value =
+            String(row[field] || "").trim();
+
+        if(
+            value === "" ||
+            isNaN(Number(value))
+        ){
+            return;
+        }
+
+        total += Number(value);
+
+        count++;
+
+    });
+
+    /*
+    Update display.
+    */
+
+    const averageElement =
+        document.getElementById("averageValue");
+
+    const countElement =
+        document.getElementById("averageCount");
+
+    if(count === 0){
+
+        averageElement.textContent = "--";
+
+        countElement.textContent =
+            "No entries recorded in the previous 14 days.";
+
+        return;
+
+    }
+
+    const average = total / count;
+
+    averageElement.textContent =
+        average.toLocaleString(
+            "en-GB",
+            {
+                maximumFractionDigits:2
+            }
+        );
+
+    countElement.textContent =
+        "Based on " + count +
+        " recorded " +
+        (count === 1 ? "entry" : "entries");
+
+}
+    
 /* ==================================================== DRAW CHART ==================================================== */
 
 function renderChart(field){
 
+    calculateAverage(field);
+    
     const canvas =
         document.getElementById("fitnessChart");
 
