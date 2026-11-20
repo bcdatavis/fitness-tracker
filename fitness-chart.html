@@ -690,12 +690,7 @@ function calculateAverage(field){
     const average = total / count;
 
     averageElement.textContent =
-        average.toLocaleString(
-            "en-GB",
-            {
-                maximumFractionDigits:2
-            }
-        );
+        Math.round(average).toLocaleString("en-GB");
 
     countElement.textContent =
         "Based on " + count +
